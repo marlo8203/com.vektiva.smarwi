@@ -1,0 +1,26 @@
+{
+  "id": "window",
+  "name": {
+    "en": "Window"
+  },
+  "height": 330,
+  "transparent": false,
+  "devices": {
+    "type": "app",
+    "singular": true,
+    "filter": {
+      "capabilities": "windowcoverings_set"
+    }
+  },
+  "api": {
+    "getState": {
+      "method": "GET",
+      "path": "/state"
+    },
+    "sendCommand": {
+      "method": "POST",
+      "path": "/command"
+    }
+  },
+  "settings": []
+}

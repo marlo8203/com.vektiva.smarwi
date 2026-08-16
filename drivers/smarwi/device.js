@@ -1,0 +1,562 @@
+'use strict';
+
+/**
+ * Vektiva SMARWI - device implementation.
+ *
+ * @author Marian Lojka <marian.lojka@gmail.com>
+ * @license MIT
+ */
+
+const Homey = require('homey');
+const SmarwiApi = require('../../lib/SmarwiApi');
+const SmarwiCloudApi = require('../../lib/SmarwiCloudApi');
+const SmarwiSocket = require('../../lib/SmarwiSocket');
+
+const DEFAULT_POLL_INTERVAL = 5; // seconds
+// With the WebSocket connected the device pushes every change, so polling is
+// only a safety net - but the readiness flag (`ok`) matters enough to check it
+// regularly even then.
+const SOCKET_POLL_INTERVAL = 15; // seconds
+// How long a movement waits for the device to become ready before it is dropped,
+// so a forgotten command cannot move the window much later.
+const PENDING_TTL = 90000; // ms
+
+class SmarwiDevice extends Homey.Device {
+
+  async onInit() {
+    const settings = this.getSettings();
+
+    this.local = settings.address ? new SmarwiApi(settings.address, { timeout: 5000 }) : null;
+    this.cloud = new SmarwiCloudApi({ deviceId: settings.device_id, timeout: 10000 });
+
+    // SMARWI does not report a real percentage, only open/closed, so we keep
+    // track of the position we last asked for.
+    this.requestedPosition = null;
+    this.wasBlocked = false;
+
+    await this.migrateCapabilities();
+
+    this.registerCapabilityListener('windowcoverings_state', (value) => this.onCapabilityState(value));
+    this.registerCapabilityListener('windowcoverings_set', (value) => this.onCapabilityPosition(value));
+    this.registerCapabilityListener('smarwi_ridge_inside', (value) => this.onCapabilityRidge(value));
+
+    this.startSocket();
+    this.restartPolling();
+
+    // Show what the device really has, rather than the manifest defaults.
+    this.homey.setTimeout(() => {
+      this.syncAdvancedConfig().catch((err) => this.log(`Finetune sync failed: ${err.message}`));
+    }, 2000);
+  }
+
+  /** Homey does not add new capabilities to already paired devices by itself. */
+  async migrateCapabilities() {
+    const wanted = ['smarwi_position', 'smarwi_fixed', 'smarwi_ridge_inside', 'alarm_generic', 'smarwi_rssi'];
+
+    for (const capability of wanted) {
+      if (this.hasCapability(capability)) continue;
+      try {
+        await this.addCapability(capability);
+        this.log(`Added capability ${capability}`);
+      } catch (err) {
+        this.error(`Could not add capability ${capability}:`, err.message);
+      }
+    }
+  }
+
+  /* ------------------------------------------------------------------ *
+   * Finetune settings (SMARWI "Finetune" tab)
+   * ------------------------------------------------------------------ */
+
+  /** Keys the device accepts; `cfdist` is set by the calibration wizard. */
+  static get FINETUNE_KEYS() {
+    return ['ospd', 'ofspd', 'orpwr', 'ofpwr', 'ohcpwr', 'ohopwr', 'hdist', 'lwid', 'vpct'];
+  }
+
+  /** Copies the Finetune values from the device into the device settings. */
+  async syncAdvancedConfig() {
+    const local = this.getLocal();
+    if (!local) return null;
+
+    const config = await local.getAdvancedConfig();
+    const patch = {};
+
+    for (const key of SmarwiDevice.FINETUNE_KEYS) {
+      if (config[key] !== undefined && config[key] !== this.getSetting(key)) patch[key] = config[key];
+    }
+    if (config.cfdist !== undefined) patch.cfdist = String(config.cfdist);
+
+    if (Object.keys(patch).length > 0) await this.setSettings(patch);
+
+    return config;
+  }
+
+  async onUninit() {
+    this.stopPolling();
+    this.stopSocket();
+  }
+
+  onDeleted() {
+    this.stopPolling();
+    this.stopSocket();
+  }
+
+  /* ------------------------------------------------------------------ *
+   * WebSocket push
+   * ------------------------------------------------------------------ */
+
+  /**
+   * The device pushes every status change over ws://<ip>/ws, which is both
+   * faster and cheaper than polling. Polling stays on as a safety net.
+   */
+  startSocket() {
+    this.stopSocket();
+
+    const address = this.getSetting('address');
+    if (!address || this.getSetting('use_websocket') === false || this.mode === 'cloud') return;
+
+    const socket = new SmarwiSocket(address, { log: (msg) => this.log(msg) });
+    this.socket = socket;
+
+    socket.on('error', (err) => this.log(`WebSocket error: ${err.message}`));
+    socket.on('status', (status) => {
+      this.applyStatus(status).catch((err) => this.error('Applying pushed status failed:', err.message));
+    });
+    // Both events change how often polling is needed.
+    socket.on('open', () => {
+      this.log('WebSocket connected');
+      this.restartPolling();
+    });
+    socket.on('close', () => this.restartPolling());
+
+    socket.connect();
+  }
+
+  stopSocket() {
+    if (this.socket) {
+      this.socket.removeAllListeners();
+      this.socket.close();
+      this.socket = null;
+    }
+  }
+
+  /* ------------------------------------------------------------------ *
+   * Transport selection
+   * ------------------------------------------------------------------ */
+
+  /**
+   * `auto` (local first, cloud as fallback), `cloud_first` (cloud first, local
+   * as fallback), `local` or `cloud`.
+   */
+  get mode() {
+    return this.getSetting('connection') || 'auto';
+  }
+
+  /** True when vektiva.online is the preferred transport. */
+  get prefersCloud() {
+    return this.mode === 'cloud' || this.mode === 'cloud_first';
+  }
+
+  /** Local API client, or null when no IP address is configured. */
+  getLocal() {
+    return this.mode === 'cloud' ? null : this.local;
+  }
+
+  /** Cloud API client with fresh credentials, or null when not usable. */
+  getCloud() {
+    if (this.mode === 'local') return null;
+
+    this.cloud.update({
+      remoteId: this.homey.settings.get('remote_id'),
+      apiKey: this.homey.settings.get('api_key'),
+      deviceId: this.getSetting('device_id'),
+    });
+
+    return this.cloud.isConfigured() ? this.cloud : null;
+  }
+
+  /**
+   * A command takes a moment to show up in the device status, and the
+   * WebSocket only pushes on change. A few extra reads make the widget and the
+   * tile converge quickly even when a push is missed.
+   */
+  scheduleSettlingPolls() {
+    if (!this.getLocal()) return;
+
+    [1200, 3000, 6000, 12000].forEach((delay) => {
+      this.homey.setTimeout(() => {
+        this.poll().catch(() => null);
+      }, delay);
+    });
+  }
+
+  /**
+   * Sends a command over the configured transport(s), preferred one first and
+   * the other one as a fallback.
+   * @param {string} command everything after /cmd/ , e.g. `open/40`
+   */
+  async send(command) {
+    const local = this.getLocal();
+    const cloud = this.getCloud();
+
+    const transports = (this.prefersCloud
+      ? [['cloud', cloud], ['local', local]]
+      : [['local', local], ['cloud', cloud]]).filter(([, api]) => api !== null);
+
+    if (transports.length === 0) {
+      throw new Error(this.homey.__('errors.no_transport'));
+    }
+
+    let lastError = null;
+
+    for (const [name, api] of transports) {
+      try {
+        const result = await api.command(command);
+        await this.reportTransport(name);
+        this.scheduleSettlingPolls();
+        return result;
+      } catch (err) {
+        lastError = err;
+        this.log(`Command over ${name} failed: ${err.message}`);
+      }
+    }
+
+    throw lastError;
+  }
+
+  /** Warns in the Homey UI when the preferred transport had to be skipped. */
+  async reportTransport(used) {
+    const preferred = this.prefersCloud ? 'cloud' : 'local';
+
+    if (used === preferred) {
+      await this.unsetWarning().catch(() => null);
+      return;
+    }
+
+    const warning = used === 'cloud' ? 'warnings.using_cloud' : 'warnings.using_local';
+    await this.setWarning(this.homey.__(warning)).catch(() => null);
+  }
+
+  /* ------------------------------------------------------------------ *
+   * Polling
+   * ------------------------------------------------------------------ */
+
+  restartPolling() {
+    this.stopPolling();
+
+    // Only the local API exposes /statusn — a cloud-only device is write-only.
+    if (!this.getLocal()) {
+      this.setAvailable().catch(this.error);
+      return;
+    }
+
+    const seconds = this.socket && this.socket.isConnected
+      ? SOCKET_POLL_INTERVAL
+      : Math.max(2, this.getSetting('poll_interval') || DEFAULT_POLL_INTERVAL);
+
+    this.pollTimer = this.homey.setInterval(() => {
+      this.poll().catch((err) => this.error('Poll failed:', err.message));
+    }, seconds * 1000);
+
+    this.poll().catch((err) => this.error('Poll failed:', err.message));
+  }
+
+  stopPolling() {
+    if (this.pollTimer) {
+      this.homey.clearInterval(this.pollTimer);
+      this.pollTimer = null;
+    }
+  }
+
+  async poll() {
+    const local = this.getLocal();
+    if (!local) return null;
+
+    let status;
+    try {
+      status = await local.getStatus();
+    } catch (err) {
+      if (this.getCloud()) {
+        // Commands still work through the cloud, so keep the device usable
+        // and only warn that the state may be out of date.
+        await this.setAvailable().catch(this.error);
+        await this.setWarning(this.homey.__('warnings.using_cloud')).catch(() => null);
+      } else if (this.getAvailable()) {
+        await this.setUnavailable(this.homey.__('errors.unreachable')).catch(this.error);
+      }
+      throw err;
+    }
+
+    return this.applyStatus(status);
+  }
+
+  /* ------------------------------------------------------------------ *
+   * History and live updates for the dashboard widget
+   * ------------------------------------------------------------------ */
+
+  /**
+   * Remembers the last opening the window was actually set to, so the widget
+   * can offer it as a one-tap preset.
+   */
+  rememberOpening(position) {
+    if (position <= 0 || position === this.getStoreValue('lastOpenPosition')) return;
+    this.setStoreValue('lastOpenPosition', position).catch(this.error);
+  }
+
+  /** The state the widget renders, also pushed to it on every change. */
+  getWidgetState() {
+    const position = Math.round((this.getCapabilityValue('windowcoverings_set') || 0) * 100);
+
+    return {
+      id: this.getData().id,
+      name: this.getName(),
+      available: this.getAvailable(),
+      position,
+      state: this.getCapabilityValue('windowcoverings_state') || 'idle',
+      fixed: this.getCapabilityValue('smarwi_fixed') === true,
+      ridgeInside: this.getCapabilityValue('smarwi_ridge_inside') === true,
+      blocked: this.getCapabilityValue('alarm_generic') === true,
+      rssi: this.getCapabilityValue('smarwi_rssi'),
+      lastOpenPosition: this.getStoreValue('lastOpenPosition') || 50,
+      pending: this.pending ? this.pending.command : null,
+      address: this.getSetting('address') || '',
+      // The four flags the Vektiva interface shows, computed the same way.
+      flags: {
+        paused: this.lastStatus ? this.lastStatus.paused : false,
+        noPlans: this.lastStatus ? this.lastStatus.noPlans : false,
+        // Plans exist unless the device reports "no plans".
+        hasPlans: this.lastStatus ? !this.lastStatus.noPlans : false,
+        fix: this.getCapabilityValue('smarwi_fixed') === true,
+        ready: this.getCapabilityValue('smarwi_ridge_inside') === true,
+        moving: this.lastStatus ? this.lastStatus.moving : false,
+        closed: this.lastStatus ? this.lastStatus.closed : false,
+      },
+    };
+  }
+
+  /** Pushes the new state to every open widget. */
+  publishState() {
+    try {
+      this.homey.api.realtime('smarwi:state', this.getWidgetState());
+    } catch (err) {
+      // Realtime is best-effort; the widget also polls as a fallback.
+    }
+  }
+
+  /**
+   * Maps a status — polled or pushed over the WebSocket — onto the
+   * capabilities.
+   */
+  async applyStatus(status) {
+    if (!this.getAvailable()) await this.setAvailable().catch(this.error);
+    await this.unsetWarning().catch(() => null);
+
+    // "Ready" is the flag the device itself shows; the ridge follows it.
+    await this.setCapabilityValue('smarwi_ridge_inside', status.ready).catch(this.error);
+    this.lastStatus = status;
+
+    if (status.ready && this.pending) this.runPending();
+    await this.setCapabilityValue('smarwi_fixed', status.fixed).catch(this.error);
+    await this.setCapabilityValue('alarm_generic', status.error).catch(this.error);
+    if (status.rssi !== null && !Number.isNaN(status.rssi)) {
+      await this.setCapabilityValue('smarwi_rssi', status.rssi).catch(this.error);
+    }
+
+    // Position: SMARWI only reports closed (c) / open (o).
+    let position;
+    if (status.closed) {
+      position = 0;
+      if (!status.moving) this.requestedPosition = 0;
+    } else if (this.requestedPosition !== null && this.requestedPosition > 0) {
+      position = this.requestedPosition;
+    } else {
+      position = 100;
+    }
+
+    let state = 'idle';
+    if (status.opening) state = 'up';
+    else if (status.closing) state = 'down';
+
+    await this.setCapabilityValue('windowcoverings_set', position / 100).catch(this.error);
+    await this.setCapabilityValue('windowcoverings_state', state).catch(this.error);
+    await this.setCapabilityValue('smarwi_position', position).catch(this.error);
+
+    this.publishState();
+
+    // Fire the "blocked" trigger on the rising edge only.
+    if (status.error && !this.wasBlocked) {
+      this.homey.flow
+        .getDeviceTriggerCard('window_blocked')
+        .trigger(this, { state_code: status.stateCode, error_code: status.errorCode })
+        .catch(this.error);
+    }
+    this.wasBlocked = status.error;
+
+    // Keep firmware/name visible in the device settings.
+    const patch = {};
+    if (status.firmware && status.firmware !== this.getSetting('firmware')) patch.firmware = status.firmware;
+    if (status.name && status.name !== this.getSetting('device_name')) patch.device_name = status.name;
+    if (Object.keys(patch).length > 0) await this.setSettings(patch).catch(this.error);
+
+    return status;
+  }
+
+  async onSettings({ newSettings, changedKeys }) {
+    if (changedKeys.includes('address')) {
+      this.local = newSettings.address ? new SmarwiApi(newSettings.address, { timeout: 5000 }) : null;
+      this.requestedPosition = null;
+    }
+    if (changedKeys.includes('device_id')) {
+      this.cloud.update({ deviceId: newSettings.device_id });
+    }
+
+    // Finetune values have to be written into the device itself. Throwing here
+    // makes Homey show the reason and keep the old values.
+    const finetune = {};
+    for (const key of SmarwiDevice.FINETUNE_KEYS) {
+      if (changedKeys.includes(key)) finetune[key] = newSettings[key];
+    }
+
+    if (Object.keys(finetune).length > 0) {
+      const local = this.getLocal();
+      if (!local) throw new Error(this.homey.__('errors.finetune_needs_local'));
+
+      await local.setAdvancedConfig(finetune, { save: true });
+      this.log(`Finetune written: ${JSON.stringify(finetune)}`);
+    }
+    // Let the new settings take effect (and prove themselves) right away.
+    this.homey.setTimeout(() => {
+      this.startSocket();
+      this.restartPolling();
+    }, 500);
+  }
+
+  /* ------------------------------------------------------------------ *
+   * Capability listeners
+   * ------------------------------------------------------------------ */
+
+  async onCapabilityState(value) {
+    switch (value) {
+      case 'up':
+        return this.openWindow(this.requestedPosition && this.requestedPosition > 0
+          ? this.requestedPosition
+          : 100);
+      case 'down':
+        return this.closeWindow();
+      case 'idle':
+      default:
+        return this.stopWindow();
+    }
+  }
+
+  async onCapabilityPosition(value) {
+    const pct = Math.round(value * 100);
+    if (pct <= 1) return this.closeWindow();
+    return this.openWindow(pct);
+  }
+
+  /* ------------------------------------------------------------------ *
+   * Actions
+   * ------------------------------------------------------------------ */
+
+  /**
+   * Runs a movement command, or defers it until the device is ready.
+   *
+   * When the SMARWI reports itself as not ready (`ok:0`) it answers OK to a
+   * movement command but only re-engages the ridge - the window stays put and
+   * the request is lost. Engaging the ridge takes several seconds, so the
+   * command is remembered and sent as soon as the device reports readiness.
+   * @param {string} command
+   */
+  async requestMove(command) {
+    if (this.getCapabilityValue('smarwi_ridge_inside') !== false) {
+      this.clearPending();
+      return this.send(command);
+    }
+
+    this.log(`Device is not ready, deferring "${command}" and fixing the ridge`);
+    this.pending = { command, at: Date.now() };
+    this.publishState();
+
+    // Engaging the ridge; applyStatus() fires the deferred command on ok:1.
+    return this.send('stop');
+  }
+
+  clearPending() {
+    this.pending = null;
+  }
+
+  /** Called from applyStatus() once the device reports itself ready. */
+  runPending() {
+    if (!this.pending) return;
+
+    const { command, at } = this.pending;
+    this.pending = null;
+
+    if (Date.now() - at > PENDING_TTL) {
+      this.log(`Dropping deferred "${command}", the device took too long to get ready`);
+      return;
+    }
+
+    this.log(`Device is ready, running deferred "${command}"`);
+    this.send(command).catch((err) => this.error('Deferred command failed:', err.message));
+  }
+
+  async openWindow(position = 100) {
+    const pct = Math.min(100, Math.max(1, Math.round(position)));
+    this.requestedPosition = pct;
+    this.rememberOpening(pct);
+
+    await this.requestMove(`open/${pct}`);
+    await this.setCapabilityValue('windowcoverings_state', 'up').catch(this.error);
+    await this.setCapabilityValue('windowcoverings_set', pct / 100).catch(this.error);
+  }
+
+  async closeWindow() {
+    this.requestedPosition = 0;
+
+    await this.requestMove('close');
+    await this.setCapabilityValue('windowcoverings_state', 'down').catch(this.error);
+    await this.setCapabilityValue('windowcoverings_set', 0).catch(this.error);
+  }
+
+  async stopWindow() {
+    this.clearPending();
+    await this.send('stop');
+    this.requestedPosition = null;
+    await this.setCapabilityValue('windowcoverings_state', 'idle').catch(this.error);
+  }
+
+  /**
+   * Fixing and releasing the ridge is one and the same command: `stop` toggles
+   * it. (`/cmd/fix` is documented but does nothing on firmware 3.4.1, and the
+   * device reports the result in `ro`.) So only send it when the wanted state
+   * differs from the current one.
+   * @param {boolean} fixed
+   */
+  async setRidgeFixed(fixed) {
+    if (this.getCapabilityValue('smarwi_ridge_inside') === fixed) return;
+
+    await this.send('stop');
+    await this.setCapabilityValue('smarwi_ridge_inside', fixed).catch(this.error);
+  }
+
+  async fixWindow() {
+    return this.setRidgeFixed(true);
+  }
+
+  async releaseWindow() {
+    return this.setRidgeFixed(false);
+  }
+
+  async onCapabilityRidge(value) {
+    return this.setRidgeFixed(value === true);
+  }
+
+  async sendRawCommand(command) {
+    return this.send(String(command).replace(/^\/+/, ''));
+  }
+
+}
+
+module.exports = SmarwiDevice;

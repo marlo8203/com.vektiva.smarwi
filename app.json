@@ -1,0 +1,621 @@
+{
+  "id": "com.vektiva.smarwi",
+  "version": "1.10.0",
+  "compatibility": ">=12.3.0",
+  "sdk": 3,
+  "platforms": [
+    "local"
+  ],
+  "name": {
+    "en": "Vektiva SMARWI"
+  },
+  "description": {
+    "en": "Control Vektiva SMARWI window openers over your local network, with vektiva.online as an optional fallback."
+  },
+  "category": [
+    "climate"
+  ],
+  "brandColor": "#0aa1dd",
+  "tags": {
+    "en": [
+      "window",
+      "opener",
+      "smarwi",
+      "vektiva",
+      "ventilation"
+    ]
+  },
+  "permissions": [],
+  "api": {
+    "getDevices": {
+      "method": "GET",
+      "path": "/devices"
+    },
+    "testCloud": {
+      "method": "POST",
+      "path": "/test-cloud"
+    },
+    "testLocal": {
+      "method": "POST",
+      "path": "/test-local"
+    },
+    "getFinetune": {
+      "method": "GET",
+      "path": "/finetune"
+    },
+    "setFinetune": {
+      "method": "POST",
+      "path": "/finetune"
+    },
+    "resetFinetune": {
+      "method": "POST",
+      "path": "/finetune-reset"
+    }
+  },
+  "images": {
+    "small": "/assets/images/small.png",
+    "large": "/assets/images/large.png",
+    "xlarge": "/assets/images/xlarge.png"
+  },
+  "author": {
+    "name": "Marian Lojka",
+    "email": "marian.lojka@gmail.com"
+  },
+  "capabilities": {
+    "smarwi_fixed": {
+      "type": "boolean",
+      "title": {
+        "en": "Window held"
+      },
+      "getable": true,
+      "setable": false,
+      "uiComponent": "sensor",
+      "insights": true,
+      "icon": "/assets/capability/fixed.svg"
+    },
+    "smarwi_ridge_inside": {
+      "type": "boolean",
+      "title": {
+        "en": "Ridge fixed"
+      },
+      "getable": true,
+      "setable": true,
+      "uiComponent": "toggle",
+      "insights": true,
+      "icon": "/assets/capability/ridge.svg"
+    },
+    "smarwi_rssi": {
+      "type": "number",
+      "title": {
+        "en": "Signal strength"
+      },
+      "units": {
+        "en": "dBm"
+      },
+      "decimals": 0,
+      "getable": true,
+      "setable": false,
+      "uiComponent": "sensor",
+      "insights": true,
+      "icon": "/assets/capability/rssi.svg"
+    },
+    "smarwi_position": {
+      "type": "number",
+      "title": {
+        "en": "Opening"
+      },
+      "units": {
+        "en": "%"
+      },
+      "decimals": 0,
+      "min": 0,
+      "max": 100,
+      "getable": true,
+      "setable": false,
+      "uiComponent": "sensor",
+      "insights": true
+    }
+  },
+  "flow": {
+    "triggers": [
+      {
+        "id": "window_blocked",
+        "title": {
+          "en": "The window got blocked"
+        },
+        "hint": {
+          "en": "Triggers when SMARWI reports an error state, e.g. the window is locked to the frame."
+        },
+        "tokens": [
+          {
+            "name": "state_code",
+            "type": "number",
+            "title": {
+              "en": "State code"
+            }
+          },
+          {
+            "name": "error_code",
+            "type": "number",
+            "title": {
+              "en": "Error code"
+            }
+          }
+        ],
+        "args": [
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=smarwi"
+          }
+        ]
+      }
+    ],
+    "conditions": [
+      {
+        "id": "ridge_inside",
+        "title": {
+          "en": "The ridge !{{is|is not}} inside the device"
+        },
+        "args": [
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=smarwi"
+          }
+        ]
+      },
+      {
+        "id": "is_fixed",
+        "title": {
+          "en": "The window !{{is|is not}} fixed"
+        },
+        "args": [
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=smarwi"
+          }
+        ]
+      }
+    ],
+    "actions": [
+      {
+        "id": "open_to",
+        "title": {
+          "en": "Open the window to a position"
+        },
+        "titleFormatted": {
+          "en": "Open to [[position]] %"
+        },
+        "args": [
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=smarwi"
+          },
+          {
+            "name": "position",
+            "type": "range",
+            "min": 1,
+            "max": 100,
+            "step": 1,
+            "value": 50,
+            "label": "%",
+            "labelMultiplier": 1,
+            "labelDecimals": 0
+          }
+        ]
+      },
+      {
+        "id": "close",
+        "title": {
+          "en": "Close the window"
+        },
+        "args": [
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=smarwi"
+          }
+        ]
+      },
+      {
+        "id": "stop",
+        "title": {
+          "en": "Stop the movement"
+        },
+        "args": [
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=smarwi"
+          }
+        ]
+      },
+      {
+        "id": "fix",
+        "title": {
+          "en": "Fix the ridge"
+        },
+        "args": [
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=smarwi"
+          }
+        ],
+        "hint": {
+          "en": "Makes the SMARWI grab the ridge, so it can move the window. Does nothing when it already holds it."
+        }
+      },
+      {
+        "id": "release",
+        "title": {
+          "en": "Release the ridge"
+        },
+        "hint": {
+          "en": "Releases the ridge so the window can be moved by hand. The SMARWI reports itself as not ready until it is fixed again."
+        },
+        "args": [
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=smarwi"
+          }
+        ]
+      },
+      {
+        "id": "raw_command",
+        "title": {
+          "en": "Send a raw command"
+        },
+        "titleFormatted": {
+          "en": "Send raw command [[command]]"
+        },
+        "hint": {
+          "en": "Everything after /cmd/ , e.g. open/40, prio/10/20/ventilate/50 or queue/20/close"
+        },
+        "args": [
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=smarwi"
+          },
+          {
+            "name": "command",
+            "type": "text",
+            "placeholder": {
+              "en": "open/40"
+            }
+          }
+        ]
+      }
+    ]
+  },
+  "drivers": [
+    {
+      "id": "smarwi",
+      "name": {
+        "en": "SMARWI"
+      },
+      "class": "windowcoverings",
+      "capabilities": [
+        "windowcoverings_state",
+        "windowcoverings_set",
+        "smarwi_position",
+        "smarwi_fixed",
+        "smarwi_ridge_inside",
+        "alarm_generic",
+        "smarwi_rssi"
+      ],
+      "capabilitiesOptions": {
+        "windowcoverings_set": {
+          "title": {
+            "en": "Opening"
+          }
+        },
+        "alarm_generic": {
+          "title": {
+            "en": "Blocked"
+          }
+        }
+      },
+      "platforms": [
+        "local"
+      ],
+      "connectivity": [
+        "lan"
+      ],
+      "images": {
+        "small": "/drivers/smarwi/assets/images/small.png",
+        "large": "/drivers/smarwi/assets/images/large.png",
+        "xlarge": "/drivers/smarwi/assets/images/xlarge.png"
+      },
+      "pair": [
+        {
+          "id": "list_devices",
+          "template": "list_devices",
+          "navigation": {
+            "next": "add_devices"
+          }
+        },
+        {
+          "id": "add_devices",
+          "template": "add_devices"
+        }
+      ],
+      "settings": [
+        {
+          "type": "group",
+          "label": {
+            "en": "Connection"
+          },
+          "children": [
+            {
+              "id": "connection",
+              "type": "dropdown",
+              "label": {
+                "en": "Connection method"
+              },
+              "hint": {
+                "en": "Automatic uses the local network first and vektiva.online as a fallback. Only the local network can report the window state back to Homey."
+              },
+              "value": "auto",
+              "values": [
+                {
+                  "id": "auto",
+                  "label": {
+                    "en": "Automatic (local, cloud as fallback)"
+                  }
+                },
+                {
+                  "id": "cloud_first",
+                  "label": {
+                    "en": "vektiva.online first (local as fallback)"
+                  }
+                },
+                {
+                  "id": "local",
+                  "label": {
+                    "en": "Local network only"
+                  }
+                },
+                {
+                  "id": "cloud",
+                  "label": {
+                    "en": "vektiva.online only"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "group",
+          "label": {
+            "en": "Local network"
+          },
+          "children": [
+            {
+              "id": "address",
+              "type": "text",
+              "label": {
+                "en": "IP address"
+              },
+              "hint": {
+                "en": "Local IP address or hostname of the SMARWI. Reserve a static/DHCP-fixed address in your router."
+              },
+              "value": ""
+            },
+            {
+              "id": "use_websocket",
+              "type": "checkbox",
+              "label": {
+                "en": "Use WebSocket push"
+              },
+              "hint": {
+                "en": "The device pushes every status change over ws://<ip>/ws, so Homey reacts immediately and polls only once a minute as a safety net."
+              },
+              "value": true
+            },
+            {
+              "id": "poll_interval",
+              "type": "number",
+              "label": {
+                "en": "Polling interval (s)"
+              },
+              "min": 2,
+              "max": 300,
+              "units": {
+                "en": "s"
+              },
+              "value": 5
+            }
+          ]
+        },
+        {
+          "type": "group",
+          "label": {
+            "en": "Internet (vektiva.online)"
+          },
+          "children": [
+            {
+              "id": "device_id",
+              "type": "text",
+              "label": {
+                "en": "Device ID"
+              },
+              "hint": {
+                "en": "Device ID from vektiva.online. Remote ID and API key are shared by all devices and live in the app settings."
+              },
+              "value": ""
+            }
+          ]
+        },
+        {
+          "type": "group",
+          "label": {
+            "en": "Finetune (written to the SMARWI)"
+          },
+          "children": [
+            {
+              "id": "ospd",
+              "type": "number",
+              "label": {
+                "en": "Movement speed"
+              },
+              "min": 1,
+              "max": 100,
+              "value": 1,
+              "hint": {
+                "en": "These values are read from the device and written back when you change them. They are the same settings as the Finetune tab of the SMARWI web interface."
+              }
+            },
+            {
+              "id": "ofspd",
+              "type": "number",
+              "label": {
+                "en": "Near frame speed"
+              },
+              "min": 1,
+              "max": 100,
+              "value": 1
+            },
+            {
+              "id": "orpwr",
+              "type": "number",
+              "label": {
+                "en": "Movement power"
+              },
+              "min": 1,
+              "max": 100,
+              "value": 1
+            },
+            {
+              "id": "ofpwr",
+              "type": "number",
+              "label": {
+                "en": "Near frame power"
+              },
+              "min": 1,
+              "max": 100,
+              "value": 1
+            },
+            {
+              "id": "ohcpwr",
+              "type": "number",
+              "label": {
+                "en": "Closed holding power"
+              },
+              "min": 1,
+              "max": 100,
+              "value": 1
+            },
+            {
+              "id": "ohopwr",
+              "type": "number",
+              "label": {
+                "en": "Opened holding power"
+              },
+              "min": 1,
+              "max": 100,
+              "value": 1
+            },
+            {
+              "id": "hdist",
+              "type": "number",
+              "label": {
+                "en": "Closed position finetune"
+              },
+              "min": -20,
+              "max": 20,
+              "value": 0
+            },
+            {
+              "id": "lwid",
+              "type": "number",
+              "label": {
+                "en": "\"Window locked\" error trigger"
+              },
+              "min": 0,
+              "max": 40,
+              "value": 0
+            },
+            {
+              "id": "vpct",
+              "type": "number",
+              "label": {
+                "en": "Maximum open position"
+              },
+              "min": 1,
+              "max": 100,
+              "value": 1
+            },
+            {
+              "id": "cfdist",
+              "type": "label",
+              "label": {
+                "en": "Calibrated distance"
+              },
+              "value": ""
+            }
+          ]
+        },
+        {
+          "type": "group",
+          "label": {
+            "en": "Information"
+          },
+          "children": [
+            {
+              "id": "device_name",
+              "type": "label",
+              "label": {
+                "en": "Device name in SMARWI"
+              },
+              "value": ""
+            },
+            {
+              "id": "firmware",
+              "type": "label",
+              "label": {
+                "en": "Firmware"
+              },
+              "value": ""
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "widgets": {
+    "window": {
+      "id": "window",
+      "name": {
+        "en": "Window"
+      },
+      "height": 330,
+      "transparent": false,
+      "devices": {
+        "type": "app",
+        "singular": true,
+        "filter": {
+          "capabilities": "windowcoverings_set"
+        }
+      },
+      "api": {
+        "getState": {
+          "method": "GET",
+          "path": "/state"
+        },
+        "sendCommand": {
+          "method": "POST",
+          "path": "/command"
+        }
+      },
+      "settings": []
+    }
+  },
+  "support": "mailto:marian.lojka@gmail.com"
+}

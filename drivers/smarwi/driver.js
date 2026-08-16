@@ -1,0 +1,93 @@
+'use strict';
+
+/**
+ * Vektiva SMARWI - driver: pairing and Flow cards.
+ *
+ * @author Marian Lojka <marian.lojka@gmail.com>
+ * @license MIT
+ */
+
+const Homey = require('homey');
+const { discoverSmarwis } = require('../../lib/discover');
+
+class SmarwiDriver extends Homey.Driver {
+
+  async onInit() {
+    this.homey.flow.getActionCard('open_to')
+      .registerRunListener(async ({ device, position }) => device.openWindow(position));
+
+    this.homey.flow.getActionCard('close')
+      .registerRunListener(async ({ device }) => device.closeWindow());
+
+    this.homey.flow.getActionCard('stop')
+      .registerRunListener(async ({ device }) => device.stopWindow());
+
+    this.homey.flow.getActionCard('fix')
+      .registerRunListener(async ({ device }) => device.fixWindow());
+
+    this.homey.flow.getActionCard('release')
+      .registerRunListener(async ({ device }) => device.releaseWindow());
+
+    this.homey.flow.getActionCard('raw_command')
+      .registerRunListener(async ({ device, command }) => device.sendRawCommand(command));
+
+    this.homey.flow.getConditionCard('ridge_inside')
+      .registerRunListener(async ({ device }) => device.getCapabilityValue('smarwi_ridge_inside') === true);
+
+    this.homey.flow.getConditionCard('is_fixed')
+      .registerRunListener(async ({ device }) => device.getCapabilityValue('smarwi_fixed') === true);
+  }
+
+  /**
+   * Scans the local network for SMARWI devices.
+   * SMARWI supports neither mDNS nor SSDP, so this asks every host on Homey's
+   * own /24 subnet for /statusn — which beats making the user type an IP.
+   */
+  async onPairListDevices() {
+    // Homey apps run in a container, so the LAN subnet has to come from Homey
+    // itself — os.networkInterfaces() would report the container's network.
+    let localAddress = null;
+    try {
+      localAddress = await this.homey.cloud.getLocalAddress();
+      this.log(`Homey local address: ${localAddress}`);
+    } catch (err) {
+      this.log(`Could not determine Homey's local address: ${err.message}`);
+    }
+
+    const manual = String(this.homey.settings.get('scan_subnet') || '').trim();
+    const hint = manual !== '' ? manual : localAddress;
+
+    const { devices, prefixes } = await discoverSmarwis({
+      hint,
+      log: (msg) => this.log(msg),
+    });
+
+    if (devices.length === 0) {
+      // Thrown so the details end up in the pairing dialog — with no app logs
+      // at hand, that is the only diagnostics the user gets to see.
+      const scanned = prefixes.length > 0
+        ? prefixes.map((prefix) => `${prefix}.0/24`).join(', ')
+        : 'nothing (no subnet could be determined)';
+
+      throw new Error(`No SMARWI answered. Homey address: ${localAddress || 'unknown'}, `
+        + `scanned: ${scanned}. If that subnet is wrong, set it in the app settings `
+        + '(Settings → Apps → Vektiva SMARWI).');
+    }
+
+    return devices.map(({ address, status }) => ({
+      name: status.name || `SMARWI ${address}`,
+      data: { id: status.deviceId || `smarwi-${address}` },
+      settings: {
+        address,
+        device_id: '',
+        connection: 'local',
+        poll_interval: 5,
+        device_name: status.name || '',
+        firmware: status.firmware || '',
+      },
+    }));
+  }
+
+}
+
+module.exports = SmarwiDriver;

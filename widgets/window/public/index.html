@@ -1,0 +1,635 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <!--
+    Vektiva SMARWI - "Window" dashboard widget
+    Author: Marian Lojka <marian.lojka@gmail.com>
+  -->
+  <script type="text/javascript" src="/homey.js" data-origin="widget"></script>
+  <style>
+    :root {
+      color-scheme: light dark;
+      --ink: var(--homey-text-color, #17181a);
+      --ink-soft: var(--homey-text-color-light, #8a8a8f);
+      --surface: rgba(128, 128, 128, 0.11);
+      --surface-line: rgba(128, 128, 128, 0.22);
+      --accent: #2f6fed;
+      --accent-soft: rgba(47, 111, 237, 0.10);
+      --ok: #17a34a;
+      --ok-soft: rgba(23, 163, 74, 0.12);
+      --bad: #d0021b;
+      --frame-light: #ffffff;
+      --frame-mid: #e3e7ec;
+      --frame-dark: #b9c1cb;
+      --glass-a: #eaf4fb;
+      --glass-b: #bcdcf0;
+      --opening: #253141;
+      --device-body: #ffffff;
+      --device-edge: #c8cfd8;
+      --breeze: #0aa1dd;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --ink: var(--homey-text-color, #f3f4f6);
+        --surface: rgba(255, 255, 255, 0.07);
+        --surface-line: rgba(255, 255, 255, 0.14);
+        --accent: #4b86f5;
+        --accent-soft: rgba(75, 134, 245, 0.16);
+        --ok-soft: rgba(23, 163, 74, 0.2);
+        --frame-light: #f4f6f8;
+        --frame-mid: #d3d9e0;
+        --frame-dark: #9aa3ae;
+        --glass-a: #23485f;
+        --glass-b: #12293a;
+        --opening: #070c12;
+        --device-body: #f4f6f8;
+        --device-edge: #aab3bd;
+      }
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      padding: 14px 16px 16px;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      color: var(--ink);
+      -webkit-user-select: none;
+      user-select: none;
+    }
+
+    /* ---------- header ---------- */
+    .header { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; }
+    .titles { min-width: 0; }
+    .name {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      max-width: 100%;
+      padding: 0;
+      border: none;
+      background: none;
+      color: inherit;
+      font: inherit;
+      font-weight: 700;
+      font-size: 19px;
+      cursor: pointer;
+    }
+    .name span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    /* An "open externally" icon, because this leaves Homey for the device's
+       own web interface. */
+    .name svg { width: 14px; height: 14px; flex: none; opacity: 0.45; }
+    .name:disabled { cursor: default; }
+    .name:disabled svg { display: none; }
+
+    .subtitle {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-top: 3px;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--ink-soft);
+    }
+    .subtitle .wind { width: 16px; height: 16px; flex: none; }
+
+    .link {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      flex: none;
+      padding: 5px 11px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 600;
+      background: var(--ok-soft);
+      color: var(--ok);
+    }
+    .link.off { background: rgba(208, 2, 27, 0.12); color: var(--bad); }
+    .link .dot { width: 7px; height: 7px; border-radius: 50%; background: currentColor; }
+
+    /* ---------- body ---------- */
+    .body { display: flex; align-items: stretch; gap: 14px; margin-top: 10px; }
+    svg.scene { flex: 0 0 46%; max-width: 230px; min-width: 110px; height: auto; align-self: center; }
+
+    /* Buttons stacked down the right-hand side, icon beside the label. */
+    .buttons {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      gap: 7px;
+      flex: 1;
+      min-width: 0;
+    }
+    .buttons button {
+      flex: none;
+      min-width: 0;
+      min-height: 34px;
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      justify-content: flex-start;
+      gap: 10px;
+      padding: 6px 12px;
+      border: 1px solid var(--surface-line);
+      border-radius: 12px;
+      background: var(--surface);
+      color: var(--ink);
+      font: inherit;
+      font-size: 13px;
+      font-weight: 600;
+      white-space: nowrap;
+      cursor: pointer;
+      transition: transform 0.07s ease, background 0.15s ease;
+    }
+    .buttons button svg { width: 17px; height: 17px; flex: none; }
+    .buttons button:active { transform: scale(0.97); }
+    .buttons button.active {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #fff;
+    }
+    .buttons button:disabled { opacity: 0.4; cursor: default; }
+
+    .banner {
+      margin-top: 12px;
+      padding: 10px 12px;
+      border-radius: 10px;
+      background: var(--accent-soft);
+      color: var(--accent);
+      font-size: 13px;
+      font-weight: 600;
+      text-align: center;
+    }
+
+    /* ---------- status tiles ---------- */
+    .tiles { display: flex; gap: 8px; margin-top: 10px; }
+    .tile {
+      flex: 1;
+      min-width: 0;
+      padding: 8px 4px;
+      border-radius: 10px;
+      background: var(--surface);
+      text-align: center;
+    }
+    .tile .label {
+      font-size: 11px;
+      font-weight: 500;
+      color: var(--ink-soft);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .tile .value { margin-top: 3px; font-size: 13px; font-weight: 600; }
+    .tile.warn .value { color: #e08b13; }
+    .tile.bad .value { color: var(--bad); }
+
+    /* ---------- slider ---------- */
+    .slider-block { margin-top: 12px; }
+    .slider-head {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      font-size: 14px;
+      font-weight: 600;
+    }
+    .slider-head .value { color: var(--accent); font-variant-numeric: tabular-nums; }
+    input[type=range] { width: 100%; margin: 8px 0 2px; accent-color: var(--accent); }
+    .ends {
+      display: flex;
+      justify-content: space-between;
+      font-size: 12px;
+      color: var(--ink-soft);
+    }
+
+    .error { color: var(--bad); font-size: 12px; text-align: center; margin-top: 6px; }
+
+    /* Narrow dashboards: stack the window above the controls. */
+    @media (max-width: 260px) {
+      .body { flex-direction: column; gap: 10px; }
+      svg.scene { flex: none; width: 150px; max-width: 60%; }
+      .controls { width: 100%; }
+      .buttons { flex-direction: column; }
+      .tile .label { font-size: 10px; }
+    }
+
+    /* Fresh air streaming in through the gap at the top. */
+    .breeze path {
+      stroke: var(--breeze);
+      stroke-width: 2.4;
+      stroke-linecap: round;
+      fill: none;
+      stroke-dasharray: 16 46;
+      animation: drift 2.6s linear infinite;
+    }
+    .breeze path:nth-child(2) { animation-delay: 0.85s; }
+    .breeze path:nth-child(3) { animation-delay: 1.7s; }
+    @keyframes drift {
+      0% { stroke-dashoffset: 62; opacity: 0; }
+      15% { opacity: 0.85; }
+      75% { opacity: 0.5; }
+      100% { stroke-dashoffset: 0; opacity: 0; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .breeze path { animation: none; stroke-dasharray: none; opacity: 0.5; }
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <div class="titles">
+      <button class="name" id="name-button">
+        <span id="name">SMARWI</span>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
+             stroke-linecap="round" stroke-linejoin="round">
+          <path d="M14 4h6v6" /><path d="M20 4 11 13" />
+          <path d="M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5" />
+        </svg>
+      </button>
+      <div class="subtitle">
+        <svg class="wind" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"
+             stroke-linecap="round" stroke-linejoin="round">
+          <path d="M3 8h9a3 3 0 1 0-3-3" />
+          <path d="M3 12h13a3 3 0 1 1-3 3" />
+          <path d="M3 16h7" />
+        </svg>
+        <span id="subtitle-label">Opening</span>
+        <span>·&nbsp;<span id="pct">–</span>&nbsp;%</span>
+      </div>
+    </div>
+    <span class="link" id="link"><span class="dot"></span><span id="link-label">Connected</span></span>
+  </div>
+
+  <div class="body">
+    <!-- Top-hung window seen from inside: the sash tilts open at the top. -->
+    <svg class="scene" viewBox="0 0 190 150" id="scene" preserveAspectRatio="xMidYMid meet">
+      <defs>
+        <linearGradient id="glass" x1="0.1" y1="0" x2="0.9" y2="1">
+          <stop offset="0%" stop-color="var(--glass-a)" />
+          <stop offset="55%" stop-color="var(--glass-b)" />
+          <stop offset="100%" stop-color="var(--glass-a)" />
+        </linearGradient>
+        <linearGradient id="sashFrame" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="var(--frame-light)" />
+          <stop offset="100%" stop-color="var(--frame-mid)" />
+        </linearGradient>
+        <linearGradient id="wallFrame" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="var(--frame-light)" />
+          <stop offset="100%" stop-color="var(--frame-mid)" />
+        </linearGradient>
+      </defs>
+
+      <rect x="16" y="12" width="140" height="126" rx="3" fill="url(#wallFrame)"
+            stroke="var(--frame-dark)" stroke-width="1.5" />
+      <rect x="23" y="19" width="126" height="112" rx="2" fill="var(--opening)" />
+
+      <g id="device">
+        <rect id="rail" x="87" y="6" width="7" height="8" rx="1.5" fill="var(--device-edge)" opacity="0.9" />
+        <rect x="96" y="0" width="40" height="12" rx="3.5"
+              fill="var(--device-body)" stroke="var(--device-edge)" stroke-width="1.4" />
+        <rect x="103" y="3.5" width="14" height="5" rx="1.5" fill="var(--device-edge)" opacity="0.55" />
+        <circle cx="128" cy="6" r="1.6" fill="var(--breeze)" />
+      </g>
+
+      <g id="sash">
+        <polygon id="sash-frame" points="" fill="url(#sashFrame)"
+                 stroke="var(--frame-dark)" stroke-width="1.5" stroke-linejoin="round" />
+        <polygon id="sash-glass" points="" fill="url(#glass)"
+                 stroke="var(--frame-dark)" stroke-width="0.8" stroke-linejoin="round" />
+        <rect id="handle-stem" x="0" y="0" width="0" height="0" rx="1.6" fill="var(--frame-dark)" />
+      </g>
+
+      <g class="breeze" id="breeze" opacity="0">
+        <path d="M58 26 q16 12 0 24 q-16 12 0 24" />
+        <path d="M86 24 q16 12 0 24 q-16 12 0 24" />
+        <path d="M114 27 q16 12 0 24 q-16 12 0 24" />
+      </g>
+    </svg>
+
+    <div class="buttons">
+      <button id="btn-open">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+             stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 19V5" /><path d="m5 12 7-7 7 7" />
+        </svg>
+        <span id="btn-open-label">Open</span>
+      </button>
+      <button id="btn-stop">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+             stroke-linecap="round" stroke-linejoin="round">
+          <rect x="6" y="6" width="12" height="12" rx="1.5" />
+        </svg>
+        <span id="btn-stop-label">Stop</span>
+      </button>
+      <button id="btn-closed">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+             stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 5v14" /><path d="m5 12 7 7 7-7" />
+        </svg>
+        <span id="btn-close-label">Close</span>
+      </button>
+    </div>
+  </div>
+
+  <div class="slider-block">
+    <div class="slider-head">
+      <span id="slider-label">Window position</span>
+      <span class="value"><span id="slider-value">0</span>&nbsp;%</span>
+    </div>
+    <input type="range" id="slider" min="0" max="100" step="10" value="0" />
+    <div class="ends">
+      <span id="end-closed">Closed</span>
+      <span id="end-open">Open</span>
+    </div>
+  </div>
+
+  <div class="banner" id="banner">—</div>
+
+  <div class="tiles">
+    <div class="tile" id="tile-window">
+      <div class="label" id="tile-window-label">Window</div>
+      <div class="value" id="tile-window-value">—</div>
+    </div>
+    <div class="tile" id="tile-ready">
+      <div class="label" id="tile-ready-label">Readiness</div>
+      <div class="value" id="tile-ready-value">—</div>
+    </div>
+    <div class="tile" id="tile-fix">
+      <div class="label" id="tile-fix-label">Fix</div>
+      <div class="value" id="tile-fix-value">—</div>
+    </div>
+    <div class="tile" id="tile-pause">
+      <div class="label" id="tile-pause-label">Planning</div>
+      <div class="value" id="tile-pause-value">—</div>
+    </div>
+  </div>
+
+  <div class="error" id="error"></div>
+
+  <script>
+    function onHomeyReady(Homey) {
+      Homey.ready({ height: 320 });
+
+      var deviceId = (Homey.getDeviceIds() || [])[0] || '';
+      var dragging = false;
+      var address = '';
+
+      function el(id) { return document.getElementById(id); }
+
+      function translate(key, fallback) {
+        try {
+          var text = Homey.__(key);
+          if (text && text !== key) return text;
+        } catch (err) {
+          // fall through to the fallback
+        }
+        return fallback;
+      }
+
+      /* ------------------------------------------------------------------ *
+       * Drawing
+       * ------------------------------------------------------------------ */
+
+      // Top-hung window seen from inside the room: the sash is hinged at the
+      // bottom and tilts open at the top, so the gap - and the fresh air -
+      // appears along the top edge.
+      function drawWindow(position) {
+        var open = Math.max(0, Math.min(100, position)) / 100;
+        var angle = open * (Math.PI / 180) * 34;
+
+        var x0 = 24, x1 = 148;
+        var yB = 130;
+        var h = 110;
+
+        var top = yB - h * Math.cos(angle);
+        var narrow = 7 * Math.sin(angle);
+        var inset = 8;
+
+        var outer = [[x0 + narrow, top], [x1 - narrow, top], [x1, yB], [x0, yB]];
+        var inner = [
+          [x0 + narrow + inset, top + inset],
+          [x1 - narrow - inset, top + inset],
+          [x1 - inset, yB - inset],
+          [x0 + inset, yB - inset],
+        ];
+
+        var toPoints = function (points) {
+          return points.map(function (p) { return p[0].toFixed(1) + ',' + p[1].toFixed(1); }).join(' ');
+        };
+
+        el('sash-frame').setAttribute('points', toPoints(outer));
+        el('sash-glass').setAttribute('points', toPoints(inner));
+
+        var handle = el('handle-stem');
+        handle.setAttribute('x', (x1 - 7).toFixed(1));
+        handle.setAttribute('y', (yB - 42).toFixed(1));
+        handle.setAttribute('width', '3.2');
+        handle.setAttribute('height', '22');
+
+        var railHeight = 8 + open * 12;
+        el('rail').setAttribute('height', railHeight.toFixed(1));
+        el('rail').setAttribute('y', (12 - railHeight + 2).toFixed(1));
+
+        el('breeze').setAttribute('opacity', open > 0.04 ? Math.min(1, 0.35 + open).toFixed(2) : 0);
+      }
+
+      /* ------------------------------------------------------------------ *
+       * State
+       * ------------------------------------------------------------------ */
+
+      function setTile(id, value, kind) {
+        el('tile-' + id + '-value').textContent = value;
+        el('tile-' + id).className = 'tile' + (kind ? ' ' + kind : '');
+      }
+
+      function render(state) {
+        if (!state) return;
+
+        var flags = state.flags || {};
+        var moving = flags.moving === true;
+
+        el('name').textContent = state.name || 'SMARWI';
+        address = state.address || '';
+        el('name-button').disabled = address === '';
+
+        if (!dragging) {
+          el('pct').textContent = state.position;
+          el('slider-value').textContent = state.position;
+          // The slider steps in 10 %, so snap whatever the device reports.
+          el('slider').value = Math.round(state.position / 10) * 10;
+          drawWindow(state.position);
+        }
+
+        el('link').className = 'link' + (state.available ? '' : ' off');
+        el('link-label').textContent = state.available
+          ? translate('widget.connected', 'Connected')
+          : translate('widget.offline', 'Offline');
+
+        var subtitle;
+        if (!state.available) {
+          subtitle = translate('widget.offline', 'Offline');
+        } else if (moving) {
+          subtitle = state.state === 'down'
+            ? translate('widget.closing', 'Closing')
+            : translate('widget.opening', 'Opening');
+        } else {
+          subtitle = flags.closed
+            ? translate('widget.closed', 'Closed')
+            : translate('widget.open', 'Open');
+        }
+        el('subtitle-label').textContent = subtitle;
+
+        var banner;
+        if (!state.available) {
+          banner = translate('widget.offline', 'Offline');
+        } else if (state.pending) {
+          banner = translate('widget.pending', 'Waiting for the SMARWI to get ready…');
+        } else if (moving) {
+          banner = state.state === 'down'
+            ? translate('widget.banner_closing', 'Closing…')
+            : translate('widget.banner_opening', 'Opening…');
+        } else if (flags.closed) {
+          banner = translate('widget.banner_closed', 'Current state: Closed');
+        } else {
+          banner = translate('widget.banner_open', 'Current state: Open at __pct__ %')
+            .replace('__pct__', state.position);
+        }
+        el('banner').textContent = banner;
+
+        // The four values the SMARWI itself reports.
+        if (state.blocked) {
+          setTile('window', translate('widget.blocked', 'Blocked'), 'bad');
+        } else if (moving) {
+          setTile('window', state.state === 'down'
+            ? translate('widget.closing', 'Closing')
+            : translate('widget.opening', 'Opening'));
+        } else {
+          setTile('window', flags.closed
+            ? translate('widget.closed', 'Closed')
+            : translate('widget.open', 'Open'));
+        }
+
+        setTile('ready',
+          flags.ready ? translate('widget.ready', 'Ready') : translate('widget.not_ready', 'Not ready'),
+          flags.ready ? '' : 'warn');
+        setTile('fix', flags.fix ? translate('widget.yes', 'Yes') : '—');
+        // Planning: are automatic plans set up on the device, and are they running?
+        if (!flags.hasPlans) {
+          setTile('pause', translate('widget.no', 'No'));
+        } else if (flags.paused) {
+          setTile('pause', translate('widget.paused_value', 'Paused'), 'warn');
+        } else {
+          setTile('pause', translate('widget.yes', 'Yes'));
+        }
+
+        renderActive(state.position, moving);
+
+        ['btn-open', 'btn-stop', 'btn-closed'].forEach(function (id) {
+          el(id).disabled = !state.available;
+        });
+
+        fitHeight();
+      }
+
+      // Highlight whichever button matches where the window actually is.
+      function renderActive(position, moving) {
+        var active = null;
+        if (!moving) active = position <= 1 ? 'btn-closed' : 'btn-open';
+
+        ['btn-open', 'btn-stop', 'btn-closed'].forEach(function (id) {
+          el(id).classList.toggle('active', id === active);
+        });
+      }
+
+      function fail(message) {
+        el('error').textContent = message || '';
+        fitHeight();
+      }
+
+      // The layout reflows between narrow and wide dashboards, so let the
+      // widget follow its own content instead of a fixed height.
+      function fitHeight() {
+        try {
+          Homey.setHeight(Math.ceil(document.body.getBoundingClientRect().height) + 4);
+        } catch (err) { /* older hosts keep the manifest height */ }
+      }
+
+      function loadState() {
+        return Homey.api('GET', '/state?deviceId=' + encodeURIComponent(deviceId))
+          .then(function (state) { fail(''); render(state); })
+          .catch(function (err) { fail(err.message || String(err)); });
+      }
+
+      function send(body) {
+        body.deviceId = deviceId;
+        if (Homey.hapticFeedback) {
+          try { Homey.hapticFeedback(); } catch (err) { /* not always allowed */ }
+        }
+
+        return Homey.api('POST', '/command', body)
+          .then(function (state) { fail(''); render(state); })
+          .catch(function (err) { fail(err.message || String(err)); loadState(); });
+      }
+
+      function preview(position) {
+        el('pct').textContent = position;
+        el('slider-value').textContent = position;
+        el('slider').value = position;
+        drawWindow(position);
+      }
+
+      /* ------------------------------------------------------------------ *
+       * Controls
+       * ------------------------------------------------------------------ */
+
+      el('btn-open').addEventListener('click', function () {
+        preview(100);
+        send({ action: 'position', value: 100 });
+      });
+
+      el('btn-closed').addEventListener('click', function () {
+        preview(0);
+        send({ action: 'close' });
+      });
+
+      el('btn-stop').addEventListener('click', function () {
+        send({ action: 'stop' });
+      });
+
+      // Opens the SMARWI's own web interface; Homey shows its own
+      // "opened in your browser" confirmation, which an app cannot suppress.
+      el('name-button').addEventListener('click', function () {
+        if (!address || !Homey.popup) return;
+        Homey.popup('http://' + address).catch(function () {});
+      });
+
+      el('slider').addEventListener('input', function () {
+        dragging = true;
+        preview(Number(el('slider').value));
+      });
+
+      el('slider').addEventListener('change', function () {
+        dragging = false;
+        send({ action: 'position', value: Number(el('slider').value) });
+      });
+
+      Homey.on('smarwi:state', function (state) {
+        if (deviceId && state && state.id !== deviceId) return;
+        render(state);
+      });
+
+      window.addEventListener('resize', fitHeight);
+
+      drawWindow(0);
+      loadState();
+      fitHeight();
+
+      // Realtime pushes carry every change; this only covers a missed event.
+      setInterval(function () {
+        if (!dragging) loadState();
+      }, 10000);
+    }
+  </script>
+</body>
+</html>
