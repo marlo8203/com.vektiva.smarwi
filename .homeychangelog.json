@@ -46,5 +46,11 @@
   },
   "1.1.5": {
     "en": "With the ridge released the widget no longer claims to know the position: it says the ridge is released and hides the percentage, because the device cannot follow a sash it is not holding."
+  },
+  "1.1.6": {
+    "en": "A released ridge is remembered by the app, because the SMARWI does not report the state of its clamp. The button no longer flips straight back to \"Release the ridge\", and the release is forgotten as soon as the device moves the window or holds it again."
+  },
+  "1.1.7": {
+    "en": "A released ridge stays released in the widget. The device raises its holding flag for a few seconds right after the release, which used to reset the state on its own."
   }
 }

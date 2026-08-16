@@ -487,7 +487,7 @@
 
         // With the ridge released the device cannot track the sash, so the
         // percentage it reports means nothing - say so instead of pretending.
-        var released = state.available && flags.ready === false;
+        var released = state.available && state.released === true;
 
         var subtitle;
         if (!state.available) {
@@ -557,7 +557,7 @@
         }
 
         // Releasing lets you move the window by hand; fixing hands it back.
-        var ready = flags.ready !== false;
+        var ready = state.released !== true;
         el('btn-ridge').textContent = ready
           ? translate('widget.release_ridge', 'Release the ridge')
           : translate('widget.fix_ridge', 'Fix the ridge');
