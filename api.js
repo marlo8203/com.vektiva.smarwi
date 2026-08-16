@@ -62,17 +62,15 @@ module.exports = {
     }
 
     await device.getLocal().setAdvancedConfig(values, { save: body.mode === 'save' });
-    await device.syncAdvancedConfig().catch(() => null);
 
+    // Read it back, so the page shows what the device really ended up with.
     return device.getLocal().getAdvancedConfig();
   },
 
   /** Factory reset of the Finetune values. */
   async resetFinetune({ homey, body }) {
     const device = findDevice(homey, body.deviceId);
-    const config = await device.getLocal().resetAdvancedConfig();
-    await device.syncAdvancedConfig().catch(() => null);
-    return config;
+    return device.getLocal().resetAdvancedConfig();
   },
 
   /**

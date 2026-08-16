@@ -39,14 +39,14 @@ class SmarwiDevice extends Homey.Device {
     this.registerCapabilityListener('windowcoverings_state', (value) => this.onCapabilityState(value));
     this.registerCapabilityListener('windowcoverings_set', (value) => this.onCapabilityPosition(value));
 
+    // A device paired before this setting existed has no value for it.
+    if (!this.getSetting('connection')) {
+      await this.setSettings({ connection: 'auto' }).catch(this.error);
+    }
+
     this.startSocket();
     this.startMqtt();
     this.restartPolling();
-
-    // Show what the device really has, rather than the manifest defaults.
-    this.homey.setTimeout(() => {
-      this.syncAdvancedConfig().catch((err) => this.log(`Finetune sync failed: ${err.message}`));
-    }, 2000);
   }
 
   /** Homey does not add new capabilities to already paired devices by itself. */
@@ -62,33 +62,6 @@ class SmarwiDevice extends Homey.Device {
         this.error(`Could not add capability ${capability}:`, err.message);
       }
     }
-  }
-
-  /* ------------------------------------------------------------------ *
-   * Finetune settings (SMARWI "Finetune" tab)
-   * ------------------------------------------------------------------ */
-
-  /** Keys the device accepts; `cfdist` is set by the calibration wizard. */
-  static get FINETUNE_KEYS() {
-    return ['ospd', 'ofspd', 'orpwr', 'ofpwr', 'ohcpwr', 'ohopwr', 'hdist', 'lwid', 'vpct'];
-  }
-
-  /** Copies the Finetune values from the device into the device settings. */
-  async syncAdvancedConfig() {
-    const local = this.getLocal();
-    if (!local) return null;
-
-    const config = await local.getAdvancedConfig();
-    const patch = {};
-
-    for (const key of SmarwiDevice.FINETUNE_KEYS) {
-      if (config[key] !== undefined && config[key] !== this.getSetting(key)) patch[key] = config[key];
-    }
-    if (config.cfdist !== undefined) patch.cfdist = String(config.cfdist);
-
-    if (Object.keys(patch).length > 0) await this.setSettings(patch);
-
-    return config;
   }
 
   async onUninit() {
@@ -486,20 +459,6 @@ class SmarwiDevice extends Homey.Device {
       this.cloud.update({ deviceId: newSettings.device_id });
     }
 
-    // Finetune values have to be written into the device itself. Throwing here
-    // makes Homey show the reason and keep the old values.
-    const finetune = {};
-    for (const key of SmarwiDevice.FINETUNE_KEYS) {
-      if (changedKeys.includes(key)) finetune[key] = newSettings[key];
-    }
-
-    if (Object.keys(finetune).length > 0) {
-      const local = this.getLocal();
-      if (!local) throw new Error(this.homey.__('errors.finetune_needs_local'));
-
-      await local.setAdvancedConfig(finetune, { save: true });
-      this.log(`Finetune written: ${JSON.stringify(finetune)}`);
-    }
     // Let the new settings take effect (and prove themselves) right away.
     this.homey.setTimeout(() => {
       this.startSocket();
