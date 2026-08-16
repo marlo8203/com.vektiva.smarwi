@@ -1,6 +1,6 @@
 {
   "id": "com.vektiva.smarwi",
-  "version": "1.10.0",
+  "version": "1.0.0",
   "compatibility": ">=12.3.0",
   "sdk": 3,
   "platforms": [
@@ -617,5 +617,10 @@
       "settings": []
     }
   },
-  "support": "mailto:marian.lojka@gmail.com"
+  "support": "mailto:marian.lojka@gmail.com",
+  "source": "https://github.com/marlo8203/com.vektiva.smarwi",
+  "homepage": "https://github.com/marlo8203/com.vektiva.smarwi",
+  "bugs": {
+    "url": "https://github.com/marlo8203/com.vektiva.smarwi/issues"
+  }
 }

@@ -1,38 +1,5 @@
 {
   "1.0.0": {
-    "en": "First version: local control of SMARWI window openers (open, open to %, close, stop, fix), status polling and Flow cards."
-  },
-  "1.1.0": {
-    "en": "Added optional control over the internet via vektiva.online (as a fallback, or for devices on another network)."
-  },
-  "1.2.0": {
-    "en": "Instant status updates over WebSocket, Finetune settings (speed, power, maximum opening) editable from the device settings, pairing now finds devices on the network by itself, and connection tests in the app settings."
-  },
-  "1.3.0": {
-    "en": "New \"Window\" dashboard widget with a window illustration, quick 30/50/100 % buttons, a slider and an opening chart for the last day or week. The opening percentage is now also logged in Insights."
-  },
-  "1.4.0": {
-    "en": "Redesigned the Window widget: a realistic side-hung window with the SMARWI unit, player-style controls for closed / last used / fully open, and a position slider. The app is now English only."
-  },
-  "1.5.0": {
-    "en": "The Window widget now shows a top-hung window that tilts open at the top, with fresh air streaming in while it is open. Controls moved next to the window (open on top, last used in the middle, closed at the bottom), the header gained an Opening line, and tapping the device name opens the SMARWI web interface."
-  },
-  "1.6.0": {
-    "en": "The ridge fixation is now a switch on the device and a pair of Flow actions, so the window can be released for manual use and grabbed again. New artwork throughout the app."
-  },
-  "1.7.0": {
-    "en": "Reworked the widget layout: a smaller window on the left, three larger buttons in a row beside it, and the four status flags of the SMARWI (paused, fix, open/closed, not ready) below them. The button matching the current position is highlighted."
-  },
-  "1.8.0": {
-    "en": "New widget layout: window on the left, Open / Stop / Close buttons beside it, a state banner, the four SMARWI status values (window, readiness, fix, pause) and a labelled position slider. The widget now sizes itself to its content."
-  },
-  "1.9.0": {
-    "en": "The widget header now shows the actual state instead of a fixed label, the fourth status tile reports Planning (Yes / Paused / No), and the app reads the device a few more times right after a command so the state settles quickly."
-  },
-  "1.9.2": {
-    "en": "Movement commands now make sure the SMARWI has the ridge fixed first. When it reports itself as not ready, it answers OK to a command but only re-engages the ridge instead of moving the window."
-  },
-  "1.10.0": {
-    "en": "A movement asked for while the SMARWI is not ready is now remembered: the app fixes the ridge and runs the command as soon as the device reports itself ready, instead of silently losing it."
+    "en": "First release. Local control of Vektiva SMARWI window openers with status pushed over WebSocket, a Window dashboard widget, Finetune settings, Flow cards, Insights, and vektiva.online as an optional fallback."
   }
 }
