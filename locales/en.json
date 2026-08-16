@@ -95,6 +95,6 @@
     "release_ridge": "Release the ridge",
     "fix_ridge": "Hold the ridge",
     "holding": "Holding",
-    "banner_clamped": "Ridge held — release it to move the window by hand"
+    "banner_released": "Ridge released — the window can be moved by hand"
   }
 }
