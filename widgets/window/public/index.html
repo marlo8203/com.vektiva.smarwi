@@ -485,9 +485,15 @@
           ? translate('widget.connected', 'Connected')
           : translate('widget.offline', 'Offline');
 
+        // With the ridge released the device cannot track the sash, so the
+        // percentage it reports means nothing - say so instead of pretending.
+        var released = state.available && flags.ready === false;
+
         var subtitle;
         if (!state.available) {
           subtitle = translate('widget.offline', 'Offline');
+        } else if (released) {
+          subtitle = translate('widget.released', 'Ridge released');
         } else if (moving) {
           subtitle = state.state === 'down'
             ? translate('widget.closing', 'Closing')
@@ -502,6 +508,9 @@
         var banner;
         if (!state.available) {
           banner = translate('widget.offline', 'Offline');
+        } else if (released) {
+          banner = translate('widget.banner_released',
+            'Ridge released — the window can be moved by hand');
         } else if (state.pending) {
           banner = translate('widget.pending', 'Waiting for the SMARWI to get ready…');
         } else if (moving) {
@@ -523,6 +532,11 @@
           setTile('window', state.state === 'down'
             ? translate('widget.closing', 'Closing')
             : translate('widget.opening', 'Opening'));
+        } else if (released) {
+          // The frame sensor still says open or closed; anything between is guesswork.
+          setTile('window', flags.closed
+            ? translate('widget.closed', 'Closed')
+            : translate('widget.open', 'Open'), 'warn');
         } else {
           setTile('window', flags.closed
             ? translate('widget.closed', 'Closed')

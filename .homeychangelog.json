@@ -43,5 +43,8 @@
   },
   "1.1.4": {
     "en": "Renamed the Fix tile to Holding, which is what it reports: whether the motor is holding the sash right now. Releasing the ridge is a separate thing and shows up under Readiness."
+  },
+  "1.1.5": {
+    "en": "With the ridge released the widget no longer claims to know the position: it says the ridge is released and hides the percentage, because the device cannot follow a sash it is not holding."
   }
 }
