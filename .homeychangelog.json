@@ -19,5 +19,8 @@
   },
   "1.0.6": {
     "en": "The Device ID for vektiva.online is taken from the device itself - the SMARWI reports it in its status - so the cloud fallback no longer has to be filled in by hand."
+  },
+  "1.0.7": {
+    "en": "Real screenshots of the widget in the documentation and as the App Store preview."
   }
 }

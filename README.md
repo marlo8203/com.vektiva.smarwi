@@ -38,8 +38,10 @@ a second flat), or when the local route is temporarily down.
 
 ### Window dashboard widget
 
-<img src="docs/widget-light.png" width="420" alt="The Window widget in light mode">
-<img src="docs/widget-dark.png" width="420" alt="The Window widget in dark mode">
+<p>
+  <img src="docs/closed.png" width="300" alt="The Window widget with the window closed">
+  <img src="docs/open.png" width="300" alt="The Window widget with the window open at 100 %">
+</p>
 
 A custom widget draws the window itself: a top-hung sash that tilts open at the top in
 proportion to the current opening, with fresh air streaming in while it is open, and
@@ -61,6 +63,11 @@ device name opens the SMARWI's own web interface — Homey gives a widget no way
 a device page, `popup()` is the only navigation it has.
 
 Add it in the Homey app: **Dashboards → edit → + → Vektiva SMARWI → Window**.
+
+The opening percentage is also logged in Insights, so the day can be read back as a
+graph:
+
+<img src="docs/monitoring.png" width="360" alt="Opening over the last six hours in Homey Insights">
 
 ## The device API
 
