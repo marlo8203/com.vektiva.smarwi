@@ -34,8 +34,9 @@ class SmarwiDevice extends Homey.Device {
     this.requestedPosition = null;
     this.wasBlocked = false;
     // The firmware reports no clamp state at all - `ok`/`ro` only say whether
-    // the ridge is in the device - so a release has to be remembered here.
-    this.released = false;
+    // the ridge is *in* the device - so it is tracked here. At rest the SMARWI
+    // leaves the ridge free, which is why this starts out false.
+    this.clamped = false;
 
     await this.migrateCapabilities();
 
@@ -361,7 +362,7 @@ class SmarwiDevice extends Homey.Device {
       rssi: this.getCapabilityValue('smarwi_rssi'),
       lastOpenPosition: this.getStoreValue('lastOpenPosition') || 50,
       pending: this.pending ? this.pending.command : null,
-      released: this.released === true,
+      clamped: this.clamped === true,
       address: this.getSetting('address') || '',
       // The four flags the Vektiva interface shows, computed the same way.
       flags: {
@@ -397,10 +398,10 @@ class SmarwiDevice extends Homey.Device {
     // "Ready" is the flag the device itself shows: the ridge is in the device.
     await this.setCapabilityValue('smarwi_ridge_inside', status.ready).catch(this.error);
 
-    // Only real movement proves the clamp is closed again. The `fix` flag is
-    // no good here: the device raises it for a few seconds right after the
-    // release, which would undo the state we just recorded.
-    if (status.moving) this.released = false;
+    // Moving means the device must be gripping the ridge. It stays gripped
+    // afterwards - only a release press lets go - so nothing here sets the
+    // flag back to false.
+    if (status.moving) this.clamped = true;
 
     this.lastStatus = status;
 
@@ -583,7 +584,6 @@ class SmarwiDevice extends Homey.Device {
     this.requestedPosition = pct;
     this.rememberOpening(pct);
 
-    this.released = false;
     await this.requestMove(`open/${pct}`);
     await this.setCapabilityValue('windowcoverings_state', 'up').catch(this.error);
     await this.setCapabilityValue('windowcoverings_set', pct / 100).catch(this.error);
@@ -592,7 +592,6 @@ class SmarwiDevice extends Homey.Device {
   async closeWindow() {
     this.requestedPosition = 0;
 
-    this.released = false;
     await this.requestMove('close');
     await this.setCapabilityValue('windowcoverings_state', 'down').catch(this.error);
     await this.setCapabilityValue('windowcoverings_set', 0).catch(this.error);
@@ -632,17 +631,16 @@ class SmarwiDevice extends Homey.Device {
    * @param {boolean} fixed
    */
   /**
-   * `stop` toggles the clamp, and the device tells us nothing about it
-   * afterwards, so the state is tracked here and reset as soon as the SMARWI
-   * demonstrably has the ridge again - it moves, or it holds the sash.
-   * @param {boolean} fixed
+   * `stop` toggles the clamp and the device reports nothing about it, so the
+   * state is tracked here. Standing still the SMARWI keeps the ridge free, so
+   * the first press grips it and the next one lets go again.
+   * @param {boolean} clamped
    */
-  async setRidgeFixed(fixed) {
-    if (this.released === !fixed) return;
+  async setRidgeFixed(clamped) {
+    if (this.clamped === clamped) return;
 
     await this.send('stop');
-    this.released = !fixed;
-    this.releasedAt = Date.now();
+    this.clamped = clamped;
     this.publishState();
   }
 

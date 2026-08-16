@@ -52,5 +52,8 @@
   },
   "1.1.7": {
     "en": "A released ridge stays released in the widget. The device raises its holding flag for a few seconds right after the release, which used to reset the state on its own."
+  },
+  "1.1.9": {
+    "en": "The ridge button had its labels the wrong way round. Standing still the SMARWI leaves the ridge free, so the first press holds it and the next one lets go; the button now says what the press will do."
   }
 }

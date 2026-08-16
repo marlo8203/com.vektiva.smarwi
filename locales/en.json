@@ -93,9 +93,8 @@
     "paused_value": "Paused",
     "pending": "Waiting for the SMARWI to get ready…",
     "release_ridge": "Release the ridge",
-    "fix_ridge": "Fix the ridge",
+    "fix_ridge": "Hold the ridge",
     "holding": "Holding",
-    "released": "Ridge released",
-    "banner_released": "Ridge released — the window can be moved by hand"
+    "banner_clamped": "Ridge held — release it to move the window by hand"
   }
 }

@@ -485,15 +485,9 @@
           ? translate('widget.connected', 'Connected')
           : translate('widget.offline', 'Offline');
 
-        // With the ridge released the device cannot track the sash, so the
-        // percentage it reports means nothing - say so instead of pretending.
-        var released = state.available && state.released === true;
-
         var subtitle;
         if (!state.available) {
           subtitle = translate('widget.offline', 'Offline');
-        } else if (released) {
-          subtitle = translate('widget.released', 'Ridge released');
         } else if (moving) {
           subtitle = state.state === 'down'
             ? translate('widget.closing', 'Closing')
@@ -508,9 +502,9 @@
         var banner;
         if (!state.available) {
           banner = translate('widget.offline', 'Offline');
-        } else if (released) {
-          banner = translate('widget.banner_released',
-            'Ridge released — the window can be moved by hand');
+        } else if (state.clamped) {
+          banner = translate('widget.banner_clamped',
+            'Ridge held — release it to move the window by hand');
         } else if (state.pending) {
           banner = translate('widget.pending', 'Waiting for the SMARWI to get ready…');
         } else if (moving) {
@@ -532,11 +526,6 @@
           setTile('window', state.state === 'down'
             ? translate('widget.closing', 'Closing')
             : translate('widget.opening', 'Opening'));
-        } else if (released) {
-          // The frame sensor still says open or closed; anything between is guesswork.
-          setTile('window', flags.closed
-            ? translate('widget.closed', 'Closed')
-            : translate('widget.open', 'Open'), 'warn');
         } else {
           setTile('window', flags.closed
             ? translate('widget.closed', 'Closed')
@@ -557,12 +546,12 @@
         }
 
         // Releasing lets you move the window by hand; fixing hands it back.
-        var ready = state.released !== true;
-        el('btn-ridge').textContent = ready
+        // The label says what the next press does.
+        el('btn-ridge').textContent = state.clamped
           ? translate('widget.release_ridge', 'Release the ridge')
-          : translate('widget.fix_ridge', 'Fix the ridge');
+          : translate('widget.fix_ridge', 'Hold the ridge');
         el('btn-ridge').disabled = !state.available || moving;
-        el('btn-ridge').dataset.action = ready ? 'release' : 'fix';
+        el('btn-ridge').dataset.action = state.clamped ? 'release' : 'fix';
 
         renderActive(state.position, moving);
 
