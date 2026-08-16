@@ -38,6 +38,9 @@ a second flat), or when the local route is temporarily down.
 
 ### Window dashboard widget
 
+<img src="docs/widget-light.png" width="420" alt="The Window widget in light mode">
+<img src="docs/widget-dark.png" width="420" alt="The Window widget in dark mode">
+
 A custom widget draws the window itself: a top-hung sash that tilts open at the top in
 proportion to the current opening, with fresh air streaming in while it is open, and
 the SMARWI unit on the frame head with its ridge sliding out.
@@ -49,8 +52,8 @@ values the SMARWI itself reports:
 | Tile | Source | Values |
 |---|---|---|
 | Window | `pos` while `s == 250` | Open / Closed / Opening / Closing / Blocked |
-| Readiness | `ok` | Ready / Not ready |
-| Fix | `fix` | Yes / — |
+| Readiness | `ok` | Ready / Not ready — the SMARWI holds the ridge and can move the window |
+| Fix | `fix` | Yes / — — the motor is actively holding the sash in place |
 | Planning | `a` | Yes (a plan is running) / Paused / No (no plans set) |
 
 State arrives by push, so the widget follows the window in real time. Tapping the
@@ -109,6 +112,22 @@ The app therefore **defers the movement**: it fixes the ridge, remembers what wa
 for, and sends it the moment the device reports `ok:1`. A deferred command is dropped
 after 90 seconds so the window cannot start moving long after the fact, and `Stop`
 cancels it.
+
+### How far "Open" goes
+
+`Open` means "to the calibrated maximum": the device travels `cfdist` (the distance
+recorded by the calibration wizard) multiplied by `vpct`, the *Maximum open position*
+Finetune value. With `vpct: 100` it uses the whole calibrated distance, and if that
+distance was recorded generously the ridge can run out of the device at full open.
+
+Two ways to rein it in, both in the app settings under Finetune:
+
+* lower **Maximum open position** (`vpct`) to, say, 70 — `Open` then stops there and
+  100 % in Homey means that reduced travel;
+* or re-run **Calibration** in the SMARWI web interface so `cfdist` matches the window.
+
+The app cannot clamp this on its own: it has no position feedback, so the limit has to
+live in the device.
 
 ### Repositioning always goes through the frame
 

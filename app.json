@@ -1,6 +1,6 @@
 {
   "id": "com.vektiva.smarwi",
-  "version": "1.0.1",
+  "version": "1.0.3",
   "compatibility": ">=12.3.0",
   "sdk": 3,
   "platforms": [
@@ -76,11 +76,11 @@
     "smarwi_ridge_inside": {
       "type": "boolean",
       "title": {
-        "en": "Ridge fixed"
+        "en": "Ready"
       },
       "getable": true,
-      "setable": true,
-      "uiComponent": "toggle",
+      "setable": false,
+      "uiComponent": "sensor",
       "insights": true,
       "icon": "/assets/capability/ridge.svg"
     },
@@ -155,7 +155,7 @@
       {
         "id": "ridge_inside",
         "title": {
-          "en": "The ridge !{{is|is not}} inside the device"
+          "en": "The SMARWI !{{is|is not}} ready"
         },
         "args": [
           {
@@ -301,8 +301,8 @@
       },
       "class": "windowcoverings",
       "capabilities": [
-        "windowcoverings_state",
         "windowcoverings_set",
+        "windowcoverings_state",
         "smarwi_position",
         "smarwi_fixed",
         "smarwi_ridge_inside",

@@ -4,5 +4,11 @@
   },
   "1.0.1": {
     "en": "While a movement is under way or waiting for the device, the widget shows the requested position instead of briefly jumping back to 100 %. A command deferred until the SMARWI is ready now runs as soon as it gets there, without needing a second press."
+  },
+  "1.0.2": {
+    "en": "The readiness of the SMARWI is shown as a sensor instead of a switch on the device tile - fixing and releasing the ridge stays available as Flow actions."
+  },
+  "1.0.3": {
+    "en": "The device tile now shows the opening percentage under the name."
   }
 }

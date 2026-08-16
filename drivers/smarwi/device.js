@@ -38,7 +38,6 @@ class SmarwiDevice extends Homey.Device {
 
     this.registerCapabilityListener('windowcoverings_state', (value) => this.onCapabilityState(value));
     this.registerCapabilityListener('windowcoverings_set', (value) => this.onCapabilityPosition(value));
-    this.registerCapabilityListener('smarwi_ridge_inside', (value) => this.onCapabilityRidge(value));
 
     this.startSocket();
     this.restartPolling();
@@ -585,10 +584,6 @@ class SmarwiDevice extends Homey.Device {
 
   async releaseWindow() {
     return this.setRidgeFixed(false);
-  }
-
-  async onCapabilityRidge(value) {
-    return this.setRidgeFixed(value === true);
   }
 
   async sendRawCommand(command) {
