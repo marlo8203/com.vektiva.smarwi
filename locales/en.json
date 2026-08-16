@@ -19,9 +19,6 @@
     "where": "Find both on vektiva.online under the API menu. Generating a new API key invalidates the old one.",
     "save": "Save",
     "saved": "Saved.",
-    "scan_title": "Network scan",
-    "scan_subnet": "Subnet to scan (optional)",
-    "scan_hint": "Only needed if pairing cannot find your SMARWI. Enter the first three numbers of your home network, e.g. 192.168.0",
     "test_cloud": "Test vektiva.online connection",
     "test_device_id": "Device ID (for the test)",
     "test_device_id_hint": "Any of your SMARWI Device IDs — the test only sends an unknown command, so no window moves.",
@@ -54,7 +51,9 @@
     "finetune_was_reset": "Reset to factory defaults.",
     "finetune_calibrated": "Calibrated distance",
     "loading": "Loading…",
-    "saving": "Writing…"
+    "saving": "Writing…",
+    "tab_basic": "Basic",
+    "tab_advanced": "Advanced"
   },
   "errors": {
     "unreachable": "SMARWI is not reachable on the network.",

@@ -10,5 +10,8 @@
   },
   "1.0.3": {
     "en": "The device tile now shows the opening percentage under the name."
+  },
+  "1.0.4": {
+    "en": "The app settings are split into Basic and Advanced tabs with clearer headings, and the manual network scan field is gone - pairing finds the subnet on its own."
   }
 }

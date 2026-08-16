@@ -54,11 +54,8 @@ class SmarwiDriver extends Homey.Driver {
       this.log(`Could not determine Homey's local address: ${err.message}`);
     }
 
-    const manual = String(this.homey.settings.get('scan_subnet') || '').trim();
-    const hint = manual !== '' ? manual : localAddress;
-
     const { devices, prefixes } = await discoverSmarwis({
-      hint,
+      hint: localAddress,
       log: (msg) => this.log(msg),
     });
 
@@ -70,8 +67,7 @@ class SmarwiDriver extends Homey.Driver {
         : 'nothing (no subnet could be determined)';
 
       throw new Error(`No SMARWI answered. Homey address: ${localAddress || 'unknown'}, `
-        + `scanned: ${scanned}. If that subnet is wrong, set it in the app settings `
-        + '(Settings → Apps → Vektiva SMARWI).');
+        + `scanned: ${scanned}.`);
     }
 
     return devices.map(({ address, status }) => ({

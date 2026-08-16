@@ -2,159 +2,211 @@
 <html>
 <head>
   <meta charset="utf-8" />
+  <!--
+    Vektiva SMARWI - app settings
+    Author: Marian Lojka <marian.lojka@gmail.com>
+  -->
   <script type="text/javascript" src="/homey.js" data-origin="settings"></script>
   <style type="text/css">
+    :root {
+      --ink: #17181a;
+      --ink-soft: #7c7f86;
+      --line: #e3e5e9;
+      --surface: #f4f5f7;
+      --accent: #2f6fed;
+      --ok: #17a34a;
+      --bad: #d0021b;
+    }
+
+    * { box-sizing: border-box; }
+
     body {
+      margin: 0;
+      padding: 16px 16px 32px;
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-      padding: 16px;
+      color: var(--ink);
+      font-size: 15px;
     }
-    .field {
-      margin-bottom: 16px;
+
+    /* ---------- tabs ---------- */
+    .tabs {
+      display: flex;
+      gap: 4px;
+      padding: 4px;
+      margin-bottom: 24px;
+      background: var(--surface);
+      border-radius: 10px;
     }
+    .tabs button {
+      flex: 1;
+      padding: 9px 0;
+      border: none;
+      border-radius: 7px;
+      background: transparent;
+      color: var(--ink-soft);
+      font: inherit;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .tabs button.active {
+      background: #fff;
+      color: var(--ink);
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
+    }
+
+    .tab { display: none; }
+    .tab.active { display: block; }
+
+    /* ---------- sections ---------- */
+    section { margin-bottom: 34px; }
+    section + section { border-top: 1px solid var(--line); padding-top: 26px; }
+    h2 {
+      margin: 0 0 4px;
+      font-size: 21px;
+      font-weight: 700;
+      letter-spacing: -0.2px;
+    }
+    .lead {
+      margin: 0 0 18px;
+      color: var(--ink-soft);
+      font-size: 14px;
+      line-height: 1.45;
+    }
+
+    .field { margin-bottom: 16px; }
     label {
       display: block;
+      font-size: 13px;
       font-weight: 600;
+      color: var(--ink-soft);
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
       margin-bottom: 6px;
     }
-    input[type="text"] {
+    input[type="text"], select {
       width: 100%;
-      box-sizing: border-box;
-      padding: 10px;
+      padding: 11px 12px;
       font-size: 15px;
-      border: 1px solid #ccc;
-      border-radius: 6px;
-    }
-    .hint {
-      color: #888;
-      font-size: 13px;
-      margin: 6px 0 0;
-    }
-    .result {
-      min-height: 20px;
-      margin: 10px 0 0;
-      word-break: break-word;
-    }
-    .result.ok {
-      color: #17a34a;
-    }
-    .result.error {
-      color: #d0021b;
-    }
-    .result.busy {
-      color: #666;
-    }
-    .secondary {
-      margin-top: 8px;
-    }
-    hr {
-      border: none;
-      border-top: 1px solid #e5e5e5;
-      margin: 28px 0;
-    }
-    select {
-      width: 100%;
-      padding: 10px;
-      font-size: 15px;
-      border: 1px solid #ccc;
-      border-radius: 6px;
+      font-family: inherit;
+      color: var(--ink);
+      border: 1px solid var(--line);
+      border-radius: 8px;
       background: #fff;
     }
-    .slider-row { margin-bottom: 14px; }
-    .slider-row label {
-      font-weight: 500;
-      font-size: 14px;
-      margin-bottom: 4px;
-    }
-    .slider-line { display: flex; align-items: center; gap: 10px; }
-    .slider-line input[type=range] { flex: 1; accent-color: #0aa1dd; }
+    .hint { margin: 6px 0 0; color: var(--ink-soft); font-size: 13px; line-height: 1.4; }
+
+    .result { min-height: 20px; margin: 12px 0 0; font-size: 14px; word-break: break-word; }
+    .result.ok { color: var(--ok); }
+    .result.error { color: var(--bad); }
+    .result.busy { color: var(--ink-soft); }
+
+    .actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 6px; }
+    .actions button { flex: 1; min-width: 120px; }
+    .spaced { margin-top: 10px; }
+
+    /* ---------- finetune ---------- */
+    .slider-row { margin-bottom: 16px; }
+    .slider-row label { text-transform: none; letter-spacing: 0; font-size: 14px; color: var(--ink); }
+    .slider-line { display: flex; align-items: center; gap: 12px; }
+    .slider-line input[type=range] { flex: 1; accent-color: var(--accent); }
     .slider-line output {
-      min-width: 38px;
+      min-width: 40px;
       text-align: right;
       font-variant-numeric: tabular-nums;
-      font-weight: 600;
+      font-weight: 700;
     }
-    .buttons { display: flex; gap: 8px; flex-wrap: wrap; }
-    .buttons button { flex: 1; min-width: 110px; }
+
+    ul.links { margin: 0; padding-left: 20px; line-height: 1.9; }
   </style>
 </head>
 <body>
-  <h2 data-i18n="settings.title"></h2>
-  <p data-i18n="settings.intro"></p>
-
-  <div class="field">
-    <label data-i18n="settings.remote_id"></label>
-    <input type="text" id="remote_id" autocapitalize="off" autocorrect="off" spellcheck="false" />
+  <div class="tabs">
+    <button id="tab-basic-button" class="active" onclick="smarwiTab('basic')" data-i18n="settings.tab_basic"></button>
+    <button id="tab-advanced-button" onclick="smarwiTab('advanced')" data-i18n="settings.tab_advanced"></button>
   </div>
 
-  <div class="field">
-    <label data-i18n="settings.api_key"></label>
-    <input type="text" id="api_key" autocapitalize="off" autocorrect="off" spellcheck="false" />
-    <p class="hint" data-i18n="settings.where"></p>
+  <!-- ------------------------------ Basic ------------------------------ -->
+  <div class="tab active" id="tab-basic">
+    <section>
+      <h2 data-i18n="settings.local_title"></h2>
+      <p class="lead" data-i18n="settings.test_address_hint"></p>
+
+      <div class="field">
+        <label data-i18n="settings.test_address"></label>
+        <input type="text" id="test_address" placeholder="192.168.1.50" autocapitalize="off" autocorrect="off" spellcheck="false" />
+      </div>
+
+      <button class="homey-button-secondary-full" onclick="smarwiTestLocal()" data-i18n="settings.test_local"></button>
+      <p class="result" id="local_result"></p>
+    </section>
+
+    <section>
+      <h2 data-i18n="settings.web_title"></h2>
+      <p class="lead" data-i18n="settings.web_intro"></p>
+      <ul class="links" id="device_links"></ul>
+    </section>
   </div>
 
-  <div class="field">
-    <label data-i18n="settings.test_device_id"></label>
-    <input type="text" id="test_device_id" placeholder="a1b2c3d4e5f6" autocapitalize="off" autocorrect="off" spellcheck="false" />
-    <p class="hint" data-i18n="settings.test_device_id_hint"></p>
+  <!-- ---------------------------- Advanced ----------------------------- -->
+  <div class="tab" id="tab-advanced">
+    <section>
+      <h2 data-i18n="settings.finetune_title"></h2>
+      <p class="lead" data-i18n="settings.finetune_intro"></p>
+
+      <div class="field">
+        <label data-i18n="settings.finetune_device"></label>
+        <select id="finetune_device"></select>
+      </div>
+
+      <div id="finetune_sliders"></div>
+
+      <div class="actions">
+        <button class="homey-button-secondary" onclick="smarwiFinetune('apply')" data-i18n="settings.finetune_apply"></button>
+        <button class="homey-button-primary" onclick="smarwiFinetune('save')" data-i18n="settings.finetune_save"></button>
+        <button class="homey-button-danger" onclick="smarwiFinetuneReset()" data-i18n="settings.finetune_reset"></button>
+      </div>
+      <p class="result" id="finetune_result"></p>
+    </section>
+
+    <section>
+      <h2 data-i18n="settings.title"></h2>
+      <p class="lead" data-i18n="settings.intro"></p>
+
+      <div class="field">
+        <label data-i18n="settings.remote_id"></label>
+        <input type="text" id="remote_id" autocapitalize="off" autocorrect="off" spellcheck="false" />
+      </div>
+
+      <div class="field">
+        <label data-i18n="settings.api_key"></label>
+        <input type="text" id="api_key" autocapitalize="off" autocorrect="off" spellcheck="false" />
+        <p class="hint" data-i18n="settings.where"></p>
+      </div>
+
+      <div class="field">
+        <label data-i18n="settings.test_device_id"></label>
+        <input type="text" id="test_device_id" placeholder="a1b2c3d4e5f6" autocapitalize="off" autocorrect="off" spellcheck="false" />
+        <p class="hint" data-i18n="settings.test_device_id_hint"></p>
+      </div>
+
+      <button class="homey-button-primary-full" onclick="smarwiSave()" data-i18n="settings.save"></button>
+      <button class="homey-button-secondary-full spaced" onclick="smarwiTestCloud()" data-i18n="settings.test_cloud"></button>
+      <p class="result" id="cloud_result"></p>
+      <p class="result" id="status"></p>
+    </section>
   </div>
-
-  <button id="save" class="homey-button-primary-full" onclick="smarwiSave()" data-i18n="settings.save"></button>
-  <button id="test_cloud" class="homey-button-secondary-full secondary" onclick="smarwiTestCloud()" data-i18n="settings.test_cloud"></button>
-  <p class="result" id="cloud_result"></p>
-
-  <hr />
-
-  <h2 data-i18n="settings.local_title"></h2>
-
-  <div class="field">
-    <label data-i18n="settings.test_address"></label>
-    <input type="text" id="test_address" placeholder="192.168.1.50" autocapitalize="off" autocorrect="off" spellcheck="false" />
-    <p class="hint" data-i18n="settings.test_address_hint"></p>
-  </div>
-
-  <button id="test_local" class="homey-button-secondary-full" onclick="smarwiTestLocal()" data-i18n="settings.test_local"></button>
-  <p class="result" id="local_result"></p>
-
-  <hr />
-
-  <h2 data-i18n="settings.finetune_title"></h2>
-  <p data-i18n="settings.finetune_intro"></p>
-
-  <div class="field">
-    <label data-i18n="settings.finetune_device"></label>
-    <select id="finetune_device"></select>
-  </div>
-
-  <div id="finetune_sliders"></div>
-
-  <div class="buttons">
-    <button class="homey-button-secondary" onclick="smarwiFinetune('apply')" data-i18n="settings.finetune_apply"></button>
-    <button class="homey-button-primary" onclick="smarwiFinetune('save')" data-i18n="settings.finetune_save"></button>
-    <button class="homey-button-danger" onclick="smarwiFinetuneReset()" data-i18n="settings.finetune_reset"></button>
-  </div>
-  <p class="result" id="finetune_result"></p>
-
-  <hr />
-
-  <h2 data-i18n="settings.web_title"></h2>
-  <p data-i18n="settings.web_intro"></p>
-  <ul id="device_links"></ul>
-
-  <hr />
-
-  <h2 data-i18n="settings.scan_title"></h2>
-  <div class="field">
-    <label data-i18n="settings.scan_subnet"></label>
-    <input type="text" id="scan_subnet" placeholder="192.168.0" autocapitalize="off" autocorrect="off" spellcheck="false" />
-    <p class="hint" data-i18n="settings.scan_hint"></p>
-  </div>
-
-  <button id="save_scan" class="homey-button-primary-full" onclick="smarwiSave()" data-i18n="settings.save"></button>
-  <p class="result" id="status"></p>
 
   <script type="text/javascript">
     // Inline onclick + global functions, because event listeners attached here
     // do not always survive the Homey frontend rendering the page.
+    function smarwiTab(name) {
+      ['basic', 'advanced'].forEach(function (tab) {
+        document.getElementById('tab-' + tab).classList.toggle('active', tab === name);
+        document.getElementById('tab-' + tab + '-button').classList.toggle('active', tab === name);
+      });
+    }
+
     function smarwiSave() {
       if (typeof window.smarwiOnSave === 'function') window.smarwiOnSave();
     }
@@ -178,7 +230,7 @@
     function onHomeyReady(Homey) {
       Homey.ready();
 
-      var fields = ['remote_id', 'api_key', 'scan_subnet', 'test_device_id', 'test_address'];
+      var fields = ['remote_id', 'api_key', 'test_device_id', 'test_address'];
 
       function value(id) {
         return document.getElementById(id).value.trim();
@@ -195,7 +247,7 @@
           var text = Homey.__(key);
           if (text && text !== key) return text;
         } catch (err) {
-          // fall through
+          // fall through to the fallback
         }
         return fallback;
       }
@@ -246,12 +298,6 @@
             show(resultId, (err && err.message) ? err.message : String(err), 'error');
           });
       }
-
-      fields.forEach(function (key) {
-        Homey.get(key, function (err, stored) {
-          if (!err && stored) document.getElementById(key).value = stored;
-        });
-      });
 
       /* ---------------- Finetune ---------------- */
 
@@ -353,6 +399,14 @@
 
       buildFinetuneSliders();
       finetuneDevice.addEventListener('change', loadFinetune);
+
+      /* ---------------- stored settings and device list ---------------- */
+
+      fields.forEach(function (key) {
+        Homey.get(key, function (err, stored) {
+          if (!err && stored) document.getElementById(key).value = stored;
+        });
+      });
 
       // Links to each SMARWI's own web interface. It cannot be embedded here:
       // this page is served over HTTPS and the SMARWI only speaks HTTP, so a
