@@ -16,5 +16,8 @@
   },
   "1.0.5": {
     "en": "Redesigned the app settings: card layout with matching buttons, an explanation behind every Finetune value, and the connection test prefilled with the address of the paired device."
+  },
+  "1.0.6": {
+    "en": "The Device ID for vektiva.online is taken from the device itself - the SMARWI reports it in its status - so the cloud fallback no longer has to be filled in by hand."
   }
 }

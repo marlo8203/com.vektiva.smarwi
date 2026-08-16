@@ -287,7 +287,7 @@
     </div>
 
     <div class="card">
-      <h2 id="t-cloud-title">vektiva.online account</h2>
+      <h2 id="t-cloud-title">Vektiva Online Account</h2>
       <p class="lead" id="t-cloud-lead">
         Only needed to control a SMARWI over the internet, for example one on a different network than
         Homey. Devices on your own network work without it.
@@ -569,8 +569,11 @@
             finetuneDevice.appendChild(option);
           });
 
-          // Prefill the test with the address of the paired device.
+          // Prefill both tests from the paired device.
           if (el('test_address').value.trim() === '') el('test_address').value = devices[0].address;
+          if (el('test_device_id').value.trim() === '' && devices[0].deviceId) {
+            el('test_device_id').value = devices[0].deviceId;
+          }
 
           loadFinetune();
         })

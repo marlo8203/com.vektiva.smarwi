@@ -398,8 +398,13 @@ class SmarwiDevice extends Homey.Device {
     }
     this.wasBlocked = status.error;
 
-    // Keep firmware/name visible in the device settings.
+    // Keep firmware/name visible in the device settings, and adopt the Device
+    // ID the SMARWI reports - it is the same one vektiva.online uses.
     const patch = {};
+    if (status.deviceId && !this.getSetting('device_id')) {
+      patch.device_id = status.deviceId;
+      this.cloud.update({ deviceId: status.deviceId });
+    }
     if (status.firmware && status.firmware !== this.getSetting('firmware')) patch.firmware = status.firmware;
     if (status.name && status.name !== this.getSetting('device_name')) patch.device_name = status.name;
     if (Object.keys(patch).length > 0) await this.setSettings(patch).catch(this.error);

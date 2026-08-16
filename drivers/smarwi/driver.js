@@ -75,7 +75,8 @@ class SmarwiDriver extends Homey.Driver {
       data: { id: status.deviceId || `smarwi-${address}` },
       settings: {
         address,
-        device_id: '',
+        // The hex ID from /statusn doubles as the vektiva.online Device ID.
+        device_id: status.deviceId || '',
         connection: 'local',
         poll_interval: 5,
         device_name: status.name || '',

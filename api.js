@@ -37,6 +37,7 @@ module.exports = {
         id: device.getData().id,
         name: device.getName(),
         address: device.getSetting('address') || '',
+        deviceId: device.getSetting('device_id') || '',
       }))
       .filter((device) => device.address !== '');
   },
