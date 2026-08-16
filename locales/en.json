@@ -93,6 +93,7 @@
     "paused_value": "Paused",
     "pending": "Waiting for the SMARWI to get ready…",
     "release_ridge": "Release the ridge",
-    "fix_ridge": "Fix the ridge"
+    "fix_ridge": "Fix the ridge",
+    "holding": "Holding"
   }
 }

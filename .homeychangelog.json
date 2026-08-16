@@ -40,5 +40,8 @@
   },
   "1.1.3": {
     "en": "The Finetune values live in one place now - the app settings, where they have sliders and an explanation each. The device settings keep only the connection."
+  },
+  "1.1.4": {
+    "en": "Renamed the Fix tile to Holding, which is what it reports: whether the motor is holding the sash right now. Releasing the ridge is a separate thing and shows up under Readiness."
   }
 }

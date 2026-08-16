@@ -62,8 +62,8 @@ values the SMARWI itself reports:
 | Tile | Source | Values |
 |---|---|---|
 | Window | `pos` while `s == 250` | Open / Closed / Opening / Closing / Blocked |
-| Readiness | `ok` | Ready / Not ready — the SMARWI holds the ridge and can move the window |
-| Fix | `fix` | Yes / — — the motor is actively holding the sash in place |
+| Readiness | `ok` | Ready / Not ready — the ridge is engaged, so the device can move the window |
+| Holding | `fix` | Yes / — — the motor is holding the sash **right now** |
 | Planning | `a` | Yes (a plan is running) / Paused / No (no plans set) |
 
 State arrives by push, so the widget follows the window in real time. Tapping the
@@ -167,6 +167,17 @@ reporting "not ready", where the next command is swallowed - so the app sends `s
 twice, and does nothing at all while the window is standing still. The same behaviour
 was found independently by the Home Assistant integration
 ([jirutka/hass-smarwi#17](https://github.com/jirutka/hass-smarwi/issues/17)).
+
+### Three states that sound alike
+
+They are easy to mix up, so in short:
+
+* **Readiness** (`ok`) — the ridge is engaged in the device. Without it nothing moves and
+  commands are swallowed. This is what the *Release the ridge* button toggles.
+* **Holding** (`fix`) — the motor is holding the sash at this moment. A closed window is
+  usually held (`fix:1`); one resting at the open position often is not (`fix:0`), which
+  is normal and not a fault.
+* **Planning** (`a`) — the scheduler inside the SMARWI, unrelated to the window.
 
 ### Fixing and releasing the ridge
 
