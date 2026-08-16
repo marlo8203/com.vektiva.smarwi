@@ -55,5 +55,8 @@
   },
   "1.2.2": {
     "en": "The ridge button and the banner had their wording the wrong way round: the button offers to release the ridge, and the banner appears only while it is released."
+  },
+  "1.2.3": {
+    "en": "Stopping the window part way no longer leaves the old percentage on screen. The SMARWI counts from the frame sensor and cannot say where the sash ended up, so the position is withheld until the next full open or close."
   }
 }

@@ -96,6 +96,7 @@
     "fix_ridge": "Hold the ridge",
     "holding": "Holding",
     "ridge_in": "Inserted",
-    "banner_released": "Ridge released — move the window by hand"
+    "banner_released": "Ridge released — move the window by hand",
+    "banner_stopped": "Stopped part way — the position is known again after a full open or close"
   }
 }

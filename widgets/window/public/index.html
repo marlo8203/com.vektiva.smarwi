@@ -473,8 +473,9 @@
         el('name-button').disabled = address === '';
 
         if (!dragging) {
-          el('pct').textContent = state.position;
-          el('slider-value').textContent = state.position;
+          var known = state.positionUnknown !== true;
+          el('pct').textContent = known ? state.position : '–';
+          el('slider-value').textContent = known ? state.position : '–';
           // The slider steps in 10 %, so snap whatever the device reports.
           el('slider').value = Math.round(state.position / 10) * 10;
           drawWindow(state.position);
@@ -513,6 +514,9 @@
             : translate('widget.banner_opening', 'Opening…');
         } else if (flags.closed) {
           banner = translate('widget.banner_closed', 'Current state: Closed');
+        } else if (state.positionUnknown) {
+          banner = translate('widget.banner_stopped',
+            'Stopped part way — the position is known again after a full open or close');
         } else {
           banner = translate('widget.banner_open', 'Current state: Open at __pct__ %')
             .replace('__pct__', state.position);

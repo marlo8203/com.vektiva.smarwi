@@ -38,6 +38,9 @@ class SmarwiDevice extends Homey.Device {
     // holding the ridge again.
     this.released = false;
     this.wasMoving = false;
+    // A movement cut short by Stop leaves the sash somewhere the device cannot
+    // name, so the percentage is withheld until a full open or close resets it.
+    this.positionUnknown = false;
 
     await this.migrateCapabilities();
 
@@ -364,6 +367,7 @@ class SmarwiDevice extends Homey.Device {
       lastOpenPosition: this.getStoreValue('lastOpenPosition') || 50,
       pending: this.pending ? this.pending.command : null,
       released: this.released === true,
+      positionUnknown: this.positionUnknown === true,
       address: this.getSetting('address') || '',
       // The four flags the Vektiva interface shows, computed the same way.
       flags: {
@@ -402,6 +406,10 @@ class SmarwiDevice extends Homey.Device {
     // Moving the window means the SMARWI has the ridge, so a movement clears
     // any release the user asked for earlier.
     if (this.wasMoving && !status.moving) this.released = false;
+
+    // A closed window is the device's own reference point, so the position is
+    // trustworthy again from there.
+    if (status.closed && !status.moving) this.positionUnknown = false;
     this.wasMoving = status.moving;
 
     this.lastStatus = status;
@@ -583,6 +591,7 @@ class SmarwiDevice extends Homey.Device {
   async openWindow(position = 100) {
     const pct = Math.min(100, Math.max(1, Math.round(position)));
     this.requestedPosition = pct;
+    this.positionUnknown = false;
     this.rememberOpening(pct);
 
     await this.requestMove(`open/${pct}`);
@@ -592,6 +601,7 @@ class SmarwiDevice extends Homey.Device {
 
   async closeWindow() {
     this.requestedPosition = 0;
+    this.positionUnknown = false;
 
     await this.requestMove('close');
     await this.setCapabilityValue('windowcoverings_state', 'down').catch(this.error);
@@ -620,6 +630,9 @@ class SmarwiDevice extends Homey.Device {
     await new Promise((resolve) => this.homey.setTimeout(resolve, 400));
     await this.send('stop');
 
+    // Interrupted halfway: the SMARWI counts from the frame sensor, so until
+    // the window is fully opened or closed again the position is guesswork.
+    this.positionUnknown = true;
     this.requestedPosition = null;
     await this.setCapabilityValue('windowcoverings_state', 'idle').catch(this.error);
   }
