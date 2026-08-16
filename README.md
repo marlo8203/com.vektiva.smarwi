@@ -55,7 +55,8 @@ proportion to the current opening, with fresh air streaming in while it is open,
 the SMARWI unit on the frame head with its ridge sliding out.
 
 Next to it sit **Open / Stop / Close**, with the button matching the current position
-highlighted. Below are a position slider in steps of 10 %, a state banner, and the four
+highlighted, and below everything a button that releases the ridge so the window can be
+opened by hand — and fixes it again afterwards. Below are a position slider in steps of 10 %, a state banner, and the four
 values the SMARWI itself reports:
 
 | Tile | Source | Values |

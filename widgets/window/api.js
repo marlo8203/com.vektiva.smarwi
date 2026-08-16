@@ -30,7 +30,7 @@ module.exports = {
   },
 
   /**
-   * @param {string} body.action `open`, `close`, `stop` or `position`
+   * @param {string} body.action `open`, `close`, `stop`, `position`, `fix` or `release`
    * @param {number} [body.value] percentage for `position`
    */
   async sendCommand({ homey, body }) {
@@ -45,6 +45,12 @@ module.exports = {
         break;
       case 'stop':
         await device.stopWindow();
+        break;
+      case 'fix':
+        await device.fixWindow();
+        break;
+      case 'release':
+        await device.releaseWindow();
         break;
       case 'position': {
         const value = Number(body.value);

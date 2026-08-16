@@ -203,6 +203,23 @@
       color: var(--ink-soft);
     }
 
+    .ridge {
+      display: block;
+      width: 100%;
+      margin-top: 10px;
+      padding: 9px 0;
+      border: 1px solid var(--surface-line);
+      border-radius: 10px;
+      background: transparent;
+      color: var(--ink-soft);
+      font: inherit;
+      font-size: 12.5px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .ridge:active { transform: scale(0.99); }
+    .ridge:disabled { opacity: 0.4; cursor: default; }
+
     .error { color: var(--bad); font-size: 12px; text-align: center; margin-top: 6px; }
 
     /* Narrow dashboards: stack the window above the controls. */
@@ -365,6 +382,8 @@
     </div>
   </div>
 
+  <button class="ridge" id="btn-ridge">Release the ridge</button>
+
   <div class="error" id="error"></div>
 
   <script>
@@ -523,6 +542,14 @@
           setTile('pause', translate('widget.yes', 'Yes'));
         }
 
+        // Releasing lets you move the window by hand; fixing hands it back.
+        var ready = flags.ready !== false;
+        el('btn-ridge').textContent = ready
+          ? translate('widget.release_ridge', 'Release the ridge')
+          : translate('widget.fix_ridge', 'Fix the ridge');
+        el('btn-ridge').disabled = !state.available || moving;
+        el('btn-ridge').dataset.action = ready ? 'release' : 'fix';
+
         renderActive(state.position, moving);
 
         ['btn-open', 'btn-stop', 'btn-closed'].forEach(function (id) {
@@ -595,6 +622,10 @@
 
       el('btn-stop').addEventListener('click', function () {
         send({ action: 'stop' });
+      });
+
+      el('btn-ridge').addEventListener('click', function () {
+        send({ action: el('btn-ridge').dataset.action || 'release' });
       });
 
       // Opens the SMARWI's own web interface; Homey shows its own

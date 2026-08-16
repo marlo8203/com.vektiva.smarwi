@@ -34,5 +34,8 @@
   },
   "1.1.1": {
     "en": "Stop now leaves the ridge fixed instead of releasing it, so the next command is not swallowed, and it does nothing while the window is standing still. Pairing also offers devices seen on the MQTT broker, which is how a SMARWI on another network gets added."
+  },
+  "1.1.2": {
+    "en": "The widget can release the ridge, so the window can be opened by hand, and fix it again afterwards."
   }
 }

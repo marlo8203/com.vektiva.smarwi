@@ -91,6 +91,8 @@
     "banner_closing": "Closing…",
     "planning": "Planning",
     "paused_value": "Paused",
-    "pending": "Waiting for the SMARWI to get ready…"
+    "pending": "Waiting for the SMARWI to get ready…",
+    "release_ridge": "Release the ridge",
+    "fix_ridge": "Fix the ridge"
   }
 }
