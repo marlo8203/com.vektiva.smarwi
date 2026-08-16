@@ -59,7 +59,7 @@ class SmarwiDriver extends Homey.Driver {
       log: (msg) => this.log(msg),
     });
 
-    if (devices.length === 0) {
+    if (devices.length === 0 && this.listMqttDevices([]).length === 0) {
       // Thrown so the details end up in the pairing dialog — with no app logs
       // at hand, that is the only diagnostics the user gets to see.
       const scanned = prefixes.length > 0
@@ -70,7 +70,7 @@ class SmarwiDriver extends Homey.Driver {
         + `scanned: ${scanned}.`);
     }
 
-    return devices.map(({ address, status }) => ({
+    const found = devices.map(({ address, status }) => ({
       name: status.name || `SMARWI ${address}`,
       data: { id: status.deviceId || `smarwi-${address}` },
       settings: {
@@ -83,6 +83,35 @@ class SmarwiDriver extends Homey.Driver {
         firmware: status.firmware || '',
       },
     }));
+
+    return [...found, ...this.listMqttDevices(found)];
+  }
+
+  /**
+   * Devices seen on the MQTT broker but not on this network - a SMARWI in
+   * another house, for instance. They are paired without an IP address and
+   * talk over MQTT only.
+   */
+  listMqttDevices(found) {
+    const mqtt = this.homey.app.getMqtt();
+    if (!mqtt) return [];
+
+    const already = new Set(found.map((device) => device.settings.device_id));
+
+    return mqtt.getKnownDevices()
+      .filter((entry) => entry.deviceId && !already.has(entry.deviceId))
+      .map((entry) => ({
+        name: entry.name || `SMARWI ${entry.deviceId}`,
+        data: { id: `smarwi-cloud-${entry.deviceId}` },
+        settings: {
+          address: '',
+          device_id: entry.deviceId,
+          connection: 'cloud',
+          poll_interval: 5,
+          device_name: entry.name || '',
+          firmware: entry.status ? entry.status.firmware || '' : '',
+        },
+      }));
   }
 
 }

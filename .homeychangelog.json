@@ -31,5 +31,8 @@
   },
   "1.1.0": {
     "en": "Optional MQTT support. Pointed at the Vektiva broker or your own one, the app receives the status of the window over the internet as well - something the HTTP cloud API cannot do - and sends commands the same way."
+  },
+  "1.1.1": {
+    "en": "Stop now leaves the ridge fixed instead of releasing it, so the next command is not swallowed, and it does nothing while the window is standing still. Pairing also offers devices seen on the MQTT broker, which is how a SMARWI on another network gets added."
   }
 }

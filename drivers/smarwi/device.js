@@ -627,9 +627,28 @@ class SmarwiDevice extends Homey.Device {
     await this.setCapabilityValue('windowcoverings_set', 0).catch(this.error);
   }
 
+  /**
+   * Stops a movement.
+   *
+   * The firmware treats `stop` as a toggle: the first one halts the window and
+   * *releases* the ridge, a second one grabs it again. Sending only one leaves
+   * the SMARWI reporting "not ready", where the next command gets swallowed.
+   * (Same conclusion as the Home Assistant integration, jirutka/hass-smarwi#17.)
+   * While nothing is moving there is nothing to stop, and a lone `stop` would
+   * just release the ridge - so it is skipped.
+   */
   async stopWindow() {
     this.clearPending();
+
+    if (this.lastStatus && !this.lastStatus.moving) {
+      this.log('Nothing to stop; not touching the ridge');
+      return;
+    }
+
     await this.send('stop');
+    await new Promise((resolve) => this.homey.setTimeout(resolve, 400));
+    await this.send('stop');
+
     this.requestedPosition = null;
     await this.setCapabilityValue('windowcoverings_state', 'idle').catch(this.error);
   }

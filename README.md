@@ -158,6 +158,15 @@ Closed → X % is a single movement; X % → Y % is always a full cycle through 
 Changing the percentage in small steps is slow and wears the mechanism, so presets beat
 fine-tuning with the slider.
 
+### Stop is a toggle, not a button
+
+`stop` does two things at once: it halts the movement **and releases the ridge**. A
+second `stop` grabs the ridge again. Sending just one therefore leaves the SMARWI
+reporting "not ready", where the next command is swallowed - so the app sends `stop`
+twice, and does nothing at all while the window is standing still. The same behaviour
+was found independently by the Home Assistant integration
+([jirutka/hass-smarwi#17](https://github.com/jirutka/hass-smarwi/issues/17)).
+
 ### Fixing and releasing the ridge
 
 `/cmd/fix` is documented, but on firmware 3.4.1 it does nothing. What actually works is
@@ -359,9 +368,9 @@ the Homey bridge is not injected into custom pairing views, even with an explici
 data to the driver. The built-in `list_devices` / `add_devices` templates need no
 custom JavaScript at all.
 
-**Known limitation:** a device that is not on Homey's local network (a cloud-only one)
-cannot be added this way. Add it while on the local network and fill in the Device ID
-in the device settings afterwards.
+With MQTT enabled, pairing also lists whatever announced itself on the broker, so a
+SMARWI in another house can be added without ever being on Homey's network. Such a
+device is paired without an IP address and talks over MQTT only.
 
 Homey apps run in a container, so `os.networkInterfaces()` reports the container's own
 network rather than the LAN. The subnet therefore comes from
@@ -395,6 +404,14 @@ tools/smarwi-cloud-test.js    # command line test of the cloud API
 
 The HTTP, HTTPS and WebSocket clients are written against Node's core modules; `mqtt`
 is the app's only runtime dependency and is used solely by the optional MQTT transport.
+
+## Prior art
+
+[jirutka/hass-smarwi](https://github.com/jirutka/hass-smarwi), the Home Assistant
+integration for the same device, was a useful second opinion while building this app.
+The state codes, the Finetune keys and the double `stop` all match what it found, which
+is reassuring for behaviour that Vektiva does not document. It talks to the device over
+MQTT only, which is where the idea of pairing straight from the broker comes from.
 
 ## Ideas for later
 
