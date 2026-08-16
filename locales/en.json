@@ -71,7 +71,7 @@
     "open": "Open",
     "closed": "Closed",
     "fixed": "fixed",
-    "ridge_out": "Ridge not inserted",
+    "ridge_out": "Removed",
     "blocked": "Blocked",
     "unavailable": "Unavailable",
     "stop": "Stop",
@@ -95,6 +95,7 @@
     "release_ridge": "Release the ridge",
     "fix_ridge": "Hold the ridge",
     "holding": "Holding",
-    "banner_released": "Ridge released — the window can be moved by hand"
+    "banner_clamped": "Ridge held — release it to move the window by hand",
+    "ridge_in": "Inserted"
   }
 }

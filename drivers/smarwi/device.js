@@ -33,7 +33,11 @@ class SmarwiDevice extends Homey.Device {
     // track of the position we last asked for.
     this.requestedPosition = null;
     this.wasBlocked = false;
-    this.wasReady = null;
+    // The device never reports whether its clamp holds the ridge, so it is
+    // tracked here: a press toggles it, and a finished movement leaves the
+    // ridge free again.
+    this.clamped = false;
+    this.wasMoving = false;
 
     await this.migrateCapabilities();
 
@@ -359,9 +363,7 @@ class SmarwiDevice extends Homey.Device {
       rssi: this.getCapabilityValue('smarwi_rssi'),
       lastOpenPosition: this.getStoreValue('lastOpenPosition') || 50,
       pending: this.pending ? this.pending.command : null,
-      // `ok` is the device's own answer to "can I move the window": it holds
-      // the ridge. Released by hand or by command, it reports not ready.
-      clamped: this.getCapabilityValue('smarwi_ridge_inside') === true,
+      clamped: this.clamped === true,
       address: this.getSetting('address') || '',
       // The four flags the Vektiva interface shows, computed the same way.
       flags: {
@@ -396,6 +398,11 @@ class SmarwiDevice extends Homey.Device {
 
     // "Ready" is the flag the device itself shows: the ridge is in the device.
     await this.setCapabilityValue('smarwi_ridge_inside', status.ready).catch(this.error);
+
+    // The SMARWI grips the ridge to move the window and lets go once it is
+    // done, so a movement that just ended means the ridge is free again.
+    if (this.wasMoving && !status.moving) this.clamped = false;
+    this.wasMoving = status.moving;
 
     this.lastStatus = status;
 
@@ -625,16 +632,16 @@ class SmarwiDevice extends Homey.Device {
    * @param {boolean} fixed
    */
   /**
-   * `stop` toggles the clamp. The device does not name that state, but `ok`
-   * follows it: gripped it reports ready, released it reports not ready. So
-   * only send the toggle when the device is not already where it should be.
+   * `stop` toggles the clamp and nothing in the status reflects it - `ok` only
+   * says whether the ridge is inside the device at all. So the wanted state is
+   * remembered here.
    * @param {boolean} clamped
    */
   async setRidgeFixed(clamped) {
-    if (this.getCapabilityValue('smarwi_ridge_inside') === clamped) return;
+    if (this.clamped === clamped) return;
 
     await this.send('stop');
-    await this.setCapabilityValue('smarwi_ridge_inside', clamped).catch(this.error);
+    this.clamped = clamped;
     this.publishState();
   }
 

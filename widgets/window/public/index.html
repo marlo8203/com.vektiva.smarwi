@@ -369,7 +369,7 @@
       <div class="value" id="tile-window-value">—</div>
     </div>
     <div class="tile" id="tile-ready">
-      <div class="label" id="tile-ready-label">Readiness</div>
+      <div class="label" id="tile-ready-label">Ridge</div>
       <div class="value" id="tile-ready-value">—</div>
     </div>
     <div class="tile" id="tile-fix">
@@ -502,9 +502,9 @@
         var banner;
         if (!state.available) {
           banner = translate('widget.offline', 'Offline');
-        } else if (flags.ready === false) {
-          banner = translate('widget.banner_released',
-            'Ridge released — the window can be moved by hand');
+        } else if (state.clamped) {
+          banner = translate('widget.banner_clamped',
+            'Ridge held — release it to move the window by hand');
         } else if (state.pending) {
           banner = translate('widget.pending', 'Waiting for the SMARWI to get ready…');
         } else if (moving) {
@@ -533,7 +533,7 @@
         }
 
         setTile('ready',
-          flags.ready ? translate('widget.ready', 'Ready') : translate('widget.not_ready', 'Not ready'),
+          flags.ready ? translate('widget.ridge_in', 'Inserted') : translate('widget.ridge_out', 'Removed'),
           flags.ready ? '' : 'warn');
         setTile('fix', flags.fix ? translate('widget.yes', 'Yes') : '—');
         // Planning: are automatic plans set up on the device, and are they running?
@@ -546,9 +546,8 @@
         }
 
         // Releasing lets you move the window by hand; fixing hands it back.
-        // The label says what the next press does; "Ready" means the device
-        // is holding the ridge.
-        var holding = flags.ready !== false;
+        // The label says what the next press does.
+        var holding = state.clamped === true;
         el('btn-ridge').textContent = holding
           ? translate('widget.release_ridge', 'Release the ridge')
           : translate('widget.fix_ridge', 'Hold the ridge');
