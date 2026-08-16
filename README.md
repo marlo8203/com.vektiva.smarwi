@@ -5,6 +5,10 @@ over your **local network**, with the **vektiva.online** cloud as an optional fa
 
 Author: Marian Lojka <marian.lojka@gmail.com> · MIT licence
 
+Submitted to the Homey App Store and currently in certification. Until it goes live it
+can be installed from the test channel:
+<https://homey.app/a/com.vektiva.smarwi/test/>
+
 ## How it connects
 
 ```
