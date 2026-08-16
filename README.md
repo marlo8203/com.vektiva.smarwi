@@ -39,8 +39,9 @@ a second flat), or when the local route is temporarily down.
 ### Window dashboard widget
 
 <p>
-  <img src="docs/closed.png" width="300" alt="The Window widget with the window closed">
-  <img src="docs/open.png" width="300" alt="The Window widget with the window open at 100 %">
+  <img src="docs/closed.png" width="290" alt="The Window widget with the window closed">
+  <img src="docs/open.png" width="290" alt="The Window widget with the window open at 100 %">
+  <img src="docs/open-dark.png" width="290" alt="The Window widget in dark mode">
 </p>
 
 A custom widget draws the window itself: a top-hung sash that tilts open at the top in
@@ -67,7 +68,10 @@ Add it in the Homey app: **Dashboards → edit → + → Vektiva SMARWI → Wind
 The opening percentage is also logged in Insights, so the day can be read back as a
 graph:
 
-<img src="docs/monitoring.png" width="360" alt="Opening over the last six hours in Homey Insights">
+<p>
+  <img src="docs/monitoring.png" width="290" alt="Opening over the last six hours in Homey Insights">
+  <img src="docs/monitoring-dark.png" width="290" alt="The same graph in dark mode">
+</p>
 
 ## The device API
 

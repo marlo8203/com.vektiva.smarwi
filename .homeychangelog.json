@@ -25,5 +25,8 @@
   },
   "1.0.8": {
     "en": "Resetting the Finetune values now explains what to do when the firmware refuses it, instead of showing a bare HTTP error."
+  },
+  "1.0.9": {
+    "en": "Added the App Store description and a dark mode preview of the widget."
   }
 }
