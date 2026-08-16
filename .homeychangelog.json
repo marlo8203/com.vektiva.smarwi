@@ -1,5 +1,8 @@
 {
   "1.0.0": {
     "en": "First release. Local control of Vektiva SMARWI window openers with status pushed over WebSocket, a Window dashboard widget, Finetune settings, Flow cards, Insights, and vektiva.online as an optional fallback."
+  },
+  "1.0.1": {
+    "en": "While a movement is under way or waiting for the device, the widget shows the requested position instead of briefly jumping back to 100 %. A command deferred until the SMARWI is ready now runs as soon as it gets there, without needing a second press."
   }
 }

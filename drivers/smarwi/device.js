@@ -94,11 +94,13 @@ class SmarwiDevice extends Homey.Device {
   async onUninit() {
     this.stopPolling();
     this.stopSocket();
+    this.stopWatchingReadiness();
   }
 
   onDeleted() {
     this.stopPolling();
     this.stopSocket();
+    this.stopWatchingReadiness();
   }
 
   /* ------------------------------------------------------------------ *
@@ -362,11 +364,16 @@ class SmarwiDevice extends Homey.Device {
       await this.setCapabilityValue('smarwi_rssi', status.rssi).catch(this.error);
     }
 
-    // Position: SMARWI only reports closed (c) / open (o).
+    // Position: SMARWI only reports closed (c) / open (o), so the requested
+    // position stands in for the percentage.
     let position;
     if (status.closed) {
       position = 0;
-      if (!status.moving) this.requestedPosition = 0;
+      if (!status.moving && !this.pending) this.requestedPosition = 0;
+    } else if (this.requestedPosition !== null && (status.moving || this.pending)) {
+      // A movement is under way or waiting for the device: show its target,
+      // including 0 while the window is closing but still reported open.
+      position = this.requestedPosition;
     } else if (this.requestedPosition !== null && this.requestedPosition > 0) {
       position = this.requestedPosition;
     } else {
@@ -477,13 +484,44 @@ class SmarwiDevice extends Homey.Device {
     this.log(`Device is not ready, deferring "${command}" and fixing the ridge`);
     this.pending = { command, at: Date.now() };
     this.publishState();
+    this.watchReadiness();
 
     // Engaging the ridge; applyStatus() fires the deferred command on ok:1.
     return this.send('stop');
   }
 
+  /**
+   * Engaging the ridge takes several seconds and does not always come with a
+   * push, so poll briskly until the device is ready or the request expires.
+   */
+  watchReadiness() {
+    if (this.pendingTimer) return;
+
+    this.pendingTimer = this.homey.setInterval(() => {
+      if (!this.pending) {
+        this.stopWatchingReadiness();
+        return;
+      }
+      if (Date.now() - this.pending.at > PENDING_TTL) {
+        this.log(`Dropping deferred "${this.pending.command}", the device never got ready`);
+        this.clearPending();
+        this.publishState();
+        return;
+      }
+      this.poll().catch(() => null);
+    }, 800);
+  }
+
+  stopWatchingReadiness() {
+    if (this.pendingTimer) {
+      this.homey.clearInterval(this.pendingTimer);
+      this.pendingTimer = null;
+    }
+  }
+
   clearPending() {
     this.pending = null;
+    this.stopWatchingReadiness();
   }
 
   /** Called from applyStatus() once the device reports itself ready. */
@@ -491,7 +529,7 @@ class SmarwiDevice extends Homey.Device {
     if (!this.pending) return;
 
     const { command, at } = this.pending;
-    this.pending = null;
+    this.clearPending();
 
     if (Date.now() - at > PENDING_TTL) {
       this.log(`Dropping deferred "${command}", the device took too long to get ready`);
