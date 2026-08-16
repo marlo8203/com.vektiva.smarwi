@@ -9,192 +9,318 @@
   <script type="text/javascript" src="/homey.js" data-origin="settings"></script>
   <style type="text/css">
     :root {
-      --ink: #17181a;
-      --ink-soft: #7c7f86;
-      --line: #e3e5e9;
-      --surface: #f4f5f7;
+      color-scheme: light dark;
+      --ink: #16181d;
+      --ink-soft: #6b7280;
+      --line: #e4e7ec;
+      --card: #ffffff;
+      --page: #f5f6f8;
       --accent: #2f6fed;
+      --accent-soft: #eaf0fe;
       --ok: #17a34a;
+      --warn: #b45309;
       --bad: #d0021b;
+      --radius: 14px;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --ink: #f2f3f5;
+        --ink-soft: #9aa0aa;
+        --line: #33363d;
+        --card: #1e2026;
+        --page: #15161a;
+        --accent: #4b86f5;
+        --accent-soft: #1e2a44;
+      }
     }
 
     * { box-sizing: border-box; }
 
     body {
       margin: 0;
-      padding: 16px 16px 32px;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      padding: 16px 14px 40px;
+      background: var(--page);
       color: var(--ink);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
       font-size: 15px;
+      line-height: 1.45;
     }
 
-    /* ---------- tabs ---------- */
+    /* ---------------- tabs ---------------- */
     .tabs {
       display: flex;
       gap: 4px;
       padding: 4px;
-      margin-bottom: 24px;
-      background: var(--surface);
-      border-radius: 10px;
+      margin-bottom: 20px;
+      background: var(--line);
+      border-radius: 12px;
     }
     .tabs button {
       flex: 1;
-      padding: 9px 0;
+      padding: 10px 0;
       border: none;
-      border-radius: 7px;
+      border-radius: 9px;
       background: transparent;
       color: var(--ink-soft);
       font: inherit;
       font-size: 14px;
       font-weight: 600;
       cursor: pointer;
+      transition: background 0.15s ease, color 0.15s ease;
     }
-    .tabs button.active {
-      background: #fff;
-      color: var(--ink);
-      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
-    }
+    .tabs button.active { background: var(--accent); color: #fff; }
 
     .tab { display: none; }
     .tab.active { display: block; }
 
-    /* ---------- sections ---------- */
-    section { margin-bottom: 34px; }
-    section + section { border-top: 1px solid var(--line); padding-top: 26px; }
-    h2 {
-      margin: 0 0 4px;
-      font-size: 21px;
+    /* ---------------- cards ---------------- */
+    .card {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: 18px;
+      margin-bottom: 14px;
+    }
+    .card > h2 {
+      margin: 0;
+      font-size: 18px;
       font-weight: 700;
       letter-spacing: -0.2px;
     }
-    .lead {
-      margin: 0 0 18px;
+    .card > .lead {
+      margin: 6px 0 0;
       color: var(--ink-soft);
-      font-size: 14px;
-      line-height: 1.45;
+      font-size: 13.5px;
     }
+    .card > .lead + * { margin-top: 18px; }
 
-    .field { margin-bottom: 16px; }
-    label {
+    /* ---------------- fields ---------------- */
+    .field { margin-top: 16px; }
+    .field > label {
       display: block;
-      font-size: 13px;
-      font-weight: 600;
-      color: var(--ink-soft);
-      text-transform: uppercase;
-      letter-spacing: 0.4px;
       margin-bottom: 6px;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.6px;
+      text-transform: uppercase;
+      color: var(--ink-soft);
     }
     input[type="text"], select {
       width: 100%;
       padding: 11px 12px;
-      font-size: 15px;
-      font-family: inherit;
-      color: var(--ink);
       border: 1px solid var(--line);
+      border-radius: 10px;
+      background: var(--page);
+      color: var(--ink);
+      font: inherit;
+      font-size: 15px;
+    }
+    input[type="text"]:focus, select:focus {
+      outline: none;
+      border-color: var(--accent);
+      background: var(--card);
+    }
+    .hint { margin: 6px 0 0; color: var(--ink-soft); font-size: 12.5px; }
+
+    /* ---------------- buttons ---------------- */
+    .row { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 16px; }
+    .row button { flex: 1; min-width: 120px; }
+    button.btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      height: 42px;
+      padding: 0 16px;
+      border: 1px solid transparent;
+      border-radius: 10px;
+      font: inherit;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: transform 0.06s ease, filter 0.15s ease;
+    }
+    button.btn:active { transform: scale(0.985); }
+    button.btn:disabled { opacity: 0.45; cursor: default; }
+    .btn.primary { background: var(--accent); color: #fff; }
+    .btn.secondary { background: var(--page); border-color: var(--line); color: var(--ink); }
+    .btn.danger { background: transparent; border-color: rgba(208, 2, 27, 0.35); color: var(--bad); }
+    .btn.full { width: 100%; }
+
+    /* ---------------- results ---------------- */
+    .result {
+      display: none;
+      margin-top: 14px;
+      padding: 11px 12px;
+      border-radius: 10px;
+      font-size: 13.5px;
+      background: var(--page);
+      color: var(--ink-soft);
+    }
+    .result.show { display: block; }
+    .result.ok { background: rgba(23, 163, 74, 0.10); color: var(--ok); }
+    .result.error { background: rgba(208, 2, 27, 0.10); color: var(--bad); }
+
+    /* ---------------- finetune ---------------- */
+    .tune { padding: 14px 0; border-top: 1px solid var(--line); }
+    .tune:first-of-type { border-top: none; }
+    .tune-head { display: flex; align-items: center; gap: 8px; }
+    .tune-head .name { flex: 1; font-size: 14px; font-weight: 600; }
+    .tune-head .value {
+      min-width: 46px;
+      padding: 3px 8px;
       border-radius: 8px;
-      background: #fff;
-    }
-    .hint { margin: 6px 0 0; color: var(--ink-soft); font-size: 13px; line-height: 1.4; }
-
-    .result { min-height: 20px; margin: 12px 0 0; font-size: 14px; word-break: break-word; }
-    .result.ok { color: var(--ok); }
-    .result.error { color: var(--bad); }
-    .result.busy { color: var(--ink-soft); }
-
-    .actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 6px; }
-    .actions button { flex: 1; min-width: 120px; }
-    .spaced { margin-top: 10px; }
-
-    /* ---------- finetune ---------- */
-    .slider-row { margin-bottom: 16px; }
-    .slider-row label { text-transform: none; letter-spacing: 0; font-size: 14px; color: var(--ink); }
-    .slider-line { display: flex; align-items: center; gap: 12px; }
-    .slider-line input[type=range] { flex: 1; accent-color: var(--accent); }
-    .slider-line output {
-      min-width: 40px;
-      text-align: right;
-      font-variant-numeric: tabular-nums;
+      background: var(--accent-soft);
+      color: var(--accent);
+      font-size: 13px;
       font-weight: 700;
+      font-variant-numeric: tabular-nums;
+      text-align: center;
+    }
+    .info {
+      width: 20px;
+      height: 20px;
+      flex: none;
+      border: 1px solid var(--line);
+      border-radius: 50%;
+      background: transparent;
+      color: var(--ink-soft);
+      font: inherit;
+      font-size: 12px;
+      font-weight: 700;
+      line-height: 1;
+      cursor: pointer;
+    }
+    .info.open { background: var(--accent); border-color: var(--accent); color: #fff; }
+    .tune .tip {
+      display: none;
+      margin: 8px 0 0;
+      padding: 10px 12px;
+      border-radius: 10px;
+      background: var(--page);
+      color: var(--ink-soft);
+      font-size: 12.5px;
+    }
+    .tune .tip.show { display: block; }
+    .tune input[type=range] { width: 100%; margin: 10px 0 0; accent-color: var(--accent); }
+    .scale {
+      display: flex;
+      justify-content: space-between;
+      font-size: 11px;
+      color: var(--ink-soft);
     }
 
-    ul.links { margin: 0; padding-left: 20px; line-height: 1.9; }
+    .meta {
+      margin-top: 16px;
+      padding-top: 14px;
+      border-top: 1px solid var(--line);
+      font-size: 12.5px;
+      color: var(--ink-soft);
+    }
+
+    ul.links { margin: 16px 0 0; padding-left: 18px; }
+    ul.links li { margin-bottom: 6px; }
+    ul.links a { color: var(--accent); }
   </style>
 </head>
 <body>
   <div class="tabs">
-    <button id="tab-basic-button" class="active" onclick="smarwiTab('basic')" data-i18n="settings.tab_basic"></button>
-    <button id="tab-advanced-button" onclick="smarwiTab('advanced')" data-i18n="settings.tab_advanced"></button>
+    <button id="tab-basic-button" class="active" onclick="smarwiTab('basic')">Basic</button>
+    <button id="tab-advanced-button" onclick="smarwiTab('advanced')">Advanced</button>
   </div>
 
   <!-- ------------------------------ Basic ------------------------------ -->
   <div class="tab active" id="tab-basic">
-    <section>
-      <h2 data-i18n="settings.local_title"></h2>
-      <p class="lead" data-i18n="settings.test_address_hint"></p>
+    <div class="card">
+      <h2 id="t-local-title">Connection test</h2>
+      <p class="lead" id="t-local-lead">
+        Checks that Homey itself can reach the SMARWI. It only reads the status, nothing moves.
+      </p>
 
       <div class="field">
-        <label data-i18n="settings.test_address"></label>
+        <label id="t-address-label">IP address</label>
         <input type="text" id="test_address" placeholder="192.168.1.50" autocapitalize="off" autocorrect="off" spellcheck="false" />
+        <p class="hint" id="t-address-hint">
+          Filled in from your paired device. Used for this test only — nothing to save.
+        </p>
       </div>
 
-      <button class="homey-button-secondary-full" onclick="smarwiTestLocal()" data-i18n="settings.test_local"></button>
-      <p class="result" id="local_result"></p>
-    </section>
+      <button class="btn secondary full" onclick="smarwiTestLocal()" id="t-test-local">Run test</button>
+      <div class="result" id="local_result"></div>
+    </div>
 
-    <section>
-      <h2 data-i18n="settings.web_title"></h2>
-      <p class="lead" data-i18n="settings.web_intro"></p>
+    <div class="card">
+      <h2 id="t-web-title">SMARWI web interface</h2>
+      <p class="lead" id="t-web-lead">
+        Opens the device's own settings — calibration, finetune and WiFi — in a new tab. It cannot be
+        embedded here: this page is served over HTTPS and the SMARWI only speaks HTTP. You have to be
+        on the same network.
+      </p>
       <ul class="links" id="device_links"></ul>
-    </section>
+    </div>
   </div>
 
   <!-- ---------------------------- Advanced ----------------------------- -->
   <div class="tab" id="tab-advanced">
-    <section>
-      <h2 data-i18n="settings.finetune_title"></h2>
-      <p class="lead" data-i18n="settings.finetune_intro"></p>
+    <div class="card">
+      <h2 id="t-tune-title">Finetune</h2>
+      <p class="lead" id="t-tune-lead">
+        The same nine values as the Finetune tab of the SMARWI web interface. <strong>Apply</strong>
+        writes them to the running device only and they are gone after a reboot; <strong>Save</strong>
+        stores them permanently.
+      </p>
 
       <div class="field">
-        <label data-i18n="settings.finetune_device"></label>
+        <label id="t-device-label">Device</label>
         <select id="finetune_device"></select>
       </div>
 
-      <div id="finetune_sliders"></div>
+      <div id="finetune_sliders" style="margin-top: 8px;"></div>
 
-      <div class="actions">
-        <button class="homey-button-secondary" onclick="smarwiFinetune('apply')" data-i18n="settings.finetune_apply"></button>
-        <button class="homey-button-primary" onclick="smarwiFinetune('save')" data-i18n="settings.finetune_save"></button>
-        <button class="homey-button-danger" onclick="smarwiFinetuneReset()" data-i18n="settings.finetune_reset"></button>
+      <div class="row">
+        <button class="btn secondary" onclick="smarwiFinetune('apply')" id="t-apply">Apply</button>
+        <button class="btn primary" onclick="smarwiFinetune('save')" id="t-save-tune">Save</button>
+        <button class="btn danger" onclick="smarwiFinetuneReset()" id="t-reset">Reset to defaults</button>
       </div>
-      <p class="result" id="finetune_result"></p>
-    </section>
+      <div class="result" id="finetune_result"></div>
+      <p class="meta" id="calibrated">Calibrated distance: —</p>
+    </div>
 
-    <section>
-      <h2 data-i18n="settings.title"></h2>
-      <p class="lead" data-i18n="settings.intro"></p>
+    <div class="card">
+      <h2 id="t-cloud-title">vektiva.online account</h2>
+      <p class="lead" id="t-cloud-lead">
+        Only needed to control a SMARWI over the internet, for example one on a different network than
+        Homey. Devices on your own network work without it.
+      </p>
 
       <div class="field">
-        <label data-i18n="settings.remote_id"></label>
+        <label id="t-remote-label">Remote ID</label>
         <input type="text" id="remote_id" autocapitalize="off" autocorrect="off" spellcheck="false" />
       </div>
 
       <div class="field">
-        <label data-i18n="settings.api_key"></label>
+        <label id="t-key-label">API key</label>
         <input type="text" id="api_key" autocapitalize="off" autocorrect="off" spellcheck="false" />
-        <p class="hint" data-i18n="settings.where"></p>
+        <p class="hint" id="t-key-hint">
+          Both are on vektiva.online under the API menu. Generating a new API key invalidates the old one.
+        </p>
       </div>
 
       <div class="field">
-        <label data-i18n="settings.test_device_id"></label>
+        <label id="t-devid-label">Device ID for the test</label>
         <input type="text" id="test_device_id" placeholder="a1b2c3d4e5f6" autocapitalize="off" autocorrect="off" spellcheck="false" />
-        <p class="hint" data-i18n="settings.test_device_id_hint"></p>
+        <p class="hint" id="t-devid-hint">
+          Any of your SMARWI Device IDs. The test sends a command that cannot exist, so no window moves.
+        </p>
       </div>
 
-      <button class="homey-button-primary-full" onclick="smarwiSave()" data-i18n="settings.save"></button>
-      <button class="homey-button-secondary-full spaced" onclick="smarwiTestCloud()" data-i18n="settings.test_cloud"></button>
-      <p class="result" id="cloud_result"></p>
-      <p class="result" id="status"></p>
-    </section>
+      <div class="row">
+        <button class="btn secondary" onclick="smarwiTestCloud()" id="t-test-cloud">Test connection</button>
+        <button class="btn primary" onclick="smarwiSave()" id="t-save-cloud">Save</button>
+      </div>
+      <div class="result" id="cloud_result"></div>
+      <div class="result" id="status"></div>
+    </div>
   </div>
 
   <script type="text/javascript">
@@ -207,39 +333,24 @@
       });
     }
 
-    function smarwiSave() {
-      if (typeof window.smarwiOnSave === 'function') window.smarwiOnSave();
-    }
-
-    function smarwiTestCloud() {
-      if (typeof window.smarwiOnTestCloud === 'function') window.smarwiOnTestCloud();
-    }
-
-    function smarwiTestLocal() {
-      if (typeof window.smarwiOnTestLocal === 'function') window.smarwiOnTestLocal();
-    }
-
-    function smarwiFinetune(mode) {
-      if (typeof window.smarwiOnFinetune === 'function') window.smarwiOnFinetune(mode);
-    }
-
-    function smarwiFinetuneReset() {
-      if (typeof window.smarwiOnFinetuneReset === 'function') window.smarwiOnFinetuneReset();
-    }
+    function smarwiSave() { if (window.smarwiOnSave) window.smarwiOnSave(); }
+    function smarwiTestCloud() { if (window.smarwiOnTestCloud) window.smarwiOnTestCloud(); }
+    function smarwiTestLocal() { if (window.smarwiOnTestLocal) window.smarwiOnTestLocal(); }
+    function smarwiFinetune(mode) { if (window.smarwiOnFinetune) window.smarwiOnFinetune(mode); }
+    function smarwiFinetuneReset() { if (window.smarwiOnFinetuneReset) window.smarwiOnFinetuneReset(); }
 
     function onHomeyReady(Homey) {
       Homey.ready();
 
       var fields = ['remote_id', 'api_key', 'test_device_id', 'test_address'];
 
-      function value(id) {
-        return document.getElementById(id).value.trim();
-      }
+      function el(id) { return document.getElementById(id); }
+      function value(id) { return el(id).value.trim(); }
 
       function show(id, text, kind) {
-        var element = document.getElementById(id);
+        var element = el(id);
         element.textContent = text || '';
-        element.className = 'result' + (kind ? ' ' + kind : '');
+        element.className = 'result' + (text ? ' show' : '') + (kind ? ' ' + kind : '');
       }
 
       function translate(key, fallback) {
@@ -284,53 +395,76 @@
       }
 
       function runTest(resultId, path, body) {
-        show(resultId, translate('settings.testing', 'Testing…'), 'busy');
+        show(resultId, translate('settings.testing', 'Testing…'), '');
 
         api('POST', path, body)
           .then(function (result) {
-            if (!result) {
-              show(resultId, 'No answer from the app.', 'error');
-              return;
-            }
+            if (!result) return show(resultId, 'No answer from the app.', 'error');
             show(resultId, result.message, result.ok ? 'ok' : 'error');
           })
-          .catch(function (err) {
-            show(resultId, (err && err.message) ? err.message : String(err), 'error');
-          });
+          .catch(function (err) { show(resultId, err.message || String(err), 'error'); });
       }
 
-      /* ---------------- Finetune ---------------- */
+      /* ------------------------------------------------------------------ *
+       * Finetune
+       * ------------------------------------------------------------------ */
 
-      // Same nine values as the Finetune tab of the SMARWI web interface,
-      // with the ranges taken from the device's own UI template.
+      // key, label, min, max, low end, high end, what it actually does
       var FINETUNE = [
-        ['ospd', 'finetune_ospd', 1, 100],
-        ['ofspd', 'finetune_ofspd', 1, 100],
-        ['orpwr', 'finetune_orpwr', 1, 100],
-        ['ofpwr', 'finetune_ofpwr', 1, 100],
-        ['ohcpwr', 'finetune_ohcpwr', 1, 100],
-        ['ohopwr', 'finetune_ohopwr', 1, 100],
-        ['hdist', 'finetune_hdist', -20, 20],
-        ['lwid', 'finetune_lwid', 0, 40],
-        ['vpct', 'finetune_vpct', 1, 100],
+        ['ospd', 'Movement speed', 1, 100, 'Slow', 'Fast',
+          'How fast the sash travels between the frame and the target opening. Lower is quieter and '
+          + 'gentler on the mechanism, higher gets the window open sooner.'],
+        ['ofspd', 'Near frame speed', 1, 100, 'Slow', 'Fast',
+          'Speed in the last stretch next to the frame, where the sash seats into the seal. Keep it '
+          + 'well below the movement speed so the window does not slam.'],
+        ['orpwr', 'Movement power', 1, 100, 'Weak', 'Strong',
+          'Motor force during normal travel. Too low and the sash stops on any friction and reports '
+          + '"window locked"; too high and an obstacle gets pushed instead of detected.'],
+        ['ofpwr', 'Near frame power', 1, 100, 'Weak', 'Strong',
+          'Force used close to the frame, where the seal resists. Usually needs to be higher than the '
+          + 'movement power, otherwise the window never quite closes.'],
+        ['ohcpwr', 'Closed holding power', 1, 100, 'Weak', 'Strong',
+          'How hard the device keeps pressing once the window is closed. Higher seals better against '
+          + 'wind and draught, and draws a little more power.'],
+        ['ohopwr', 'Opened holding power', 1, 100, 'Weak', 'Strong',
+          'How hard the sash is held at the open position. Raise it if wind pushes the window shut '
+          + 'or makes it rattle.'],
+        ['hdist', 'Closed position finetune', -20, 20, 'Looser', 'Tighter',
+          'Shifts where "closed" actually is. Increase it if the window stays slightly ajar, decrease '
+          + 'it if the device strains against the frame.'],
+        ['lwid', '"Window locked" error trigger', 0, 40, 'Sooner', 'Later',
+          'How long the device keeps pushing before deciding the window is locked or blocked. Lower '
+          + 'reacts faster to an obstacle, higher tolerates a stiff window.'],
+        ['vpct', 'Maximum open position', 1, 100, 'Min', 'Max',
+          'The share of the calibrated distance used by a full open. 100 % opens as far as the '
+          + 'calibration allows — lower it if the ridge travels too far out of the device.'],
       ];
 
-      var finetuneDevice = document.getElementById('finetune_device');
+      var finetuneDevice = el('finetune_device');
 
       function buildFinetuneSliders() {
-        document.getElementById('finetune_sliders').innerHTML = FINETUNE.map(function (row) {
-          return '<div class="slider-row">'
-            + '<label for="ft_' + row[0] + '">' + translate('settings.' + row[1], row[0]) + '</label>'
-            + '<div class="slider-line">'
-            + '<input type="range" id="ft_' + row[0] + '" min="' + row[2] + '" max="' + row[3] + '" step="1" />'
-            + '<output id="ft_out_' + row[0] + '">–</output>'
-            + '</div></div>';
+        el('finetune_sliders').innerHTML = FINETUNE.map(function (row) {
+          var key = row[0];
+          return '<div class="tune">'
+            + '<div class="tune-head">'
+            + '<span class="name">' + row[1] + '</span>'
+            + '<button class="info" id="ft_info_' + key + '" title="What is this?">i</button>'
+            + '<span class="value" id="ft_out_' + key + '">–</span>'
+            + '</div>'
+            + '<p class="tip" id="ft_tip_' + key + '">' + row[6] + '</p>'
+            + '<input type="range" id="ft_' + key + '" min="' + row[2] + '" max="' + row[3] + '" step="1" />'
+            + '<div class="scale"><span>' + row[4] + '</span><span>' + row[5] + '</span></div>'
+            + '</div>';
         }).join('');
 
         FINETUNE.forEach(function (row) {
-          var input = document.getElementById('ft_' + row[0]);
-          input.addEventListener('input', function () {
-            document.getElementById('ft_out_' + row[0]).textContent = input.value;
+          var key = row[0];
+          el('ft_' + key).addEventListener('input', function () {
+            el('ft_out_' + key).textContent = el('ft_' + key).value;
+          });
+          el('ft_info_' + key).addEventListener('click', function () {
+            el('ft_tip_' + key).classList.toggle('show');
+            el('ft_info_' + key).classList.toggle('open');
           });
         });
       }
@@ -338,35 +472,34 @@
       function fillFinetune(values) {
         FINETUNE.forEach(function (row) {
           if (values[row[0]] === undefined) return;
-          document.getElementById('ft_' + row[0]).value = values[row[0]];
-          document.getElementById('ft_out_' + row[0]).textContent = values[row[0]];
+          el('ft_' + row[0]).value = values[row[0]];
+          el('ft_out_' + row[0]).textContent = values[row[0]];
         });
 
         if (values.cfdist !== undefined) {
-          show('finetune_result',
-            translate('settings.finetune_calibrated', 'Calibrated distance') + ': ' + values.cfdist, 'busy');
+          el('calibrated').textContent = translate('settings.finetune_calibrated', 'Calibrated distance')
+            + ': ' + values.cfdist;
         }
       }
 
       function collectFinetune() {
         var values = {};
         FINETUNE.forEach(function (row) {
-          values[row[0]] = Number(document.getElementById('ft_' + row[0]).value);
+          values[row[0]] = Number(el('ft_' + row[0]).value);
         });
         return values;
       }
 
       function loadFinetune() {
         if (!finetuneDevice.value) return;
-        show('finetune_result', translate('settings.loading', 'Loading…'), 'busy');
 
         api('GET', '/finetune?deviceId=' + encodeURIComponent(finetuneDevice.value))
-          .then(function (values) { fillFinetune(values); })
+          .then(fillFinetune)
           .catch(function (err) { show('finetune_result', err.message || String(err), 'error'); });
       }
 
       window.smarwiOnFinetune = function (mode) {
-        show('finetune_result', translate('settings.saving', 'Writing…'), 'busy');
+        show('finetune_result', translate('settings.saving', 'Writing…'), '');
 
         api('POST', '/finetune', {
           deviceId: finetuneDevice.value,
@@ -376,44 +509,43 @@
           .then(function (values) {
             fillFinetune(values);
             show('finetune_result', mode === 'save'
-              ? translate('settings.finetune_saved', 'Saved to the device.')
-              : translate('settings.finetune_applied', 'Applied until the next reboot.'), 'ok');
+              ? translate('settings.finetune_saved', 'Saved permanently to the SMARWI.')
+              : translate('settings.finetune_applied', 'Applied — until the next reboot of the SMARWI.'), 'ok');
           })
           .catch(function (err) { show('finetune_result', err.message || String(err), 'error'); });
       };
 
       window.smarwiOnFinetuneReset = function () {
-        Homey.confirm(translate('settings.finetune_reset_confirm', 'Really reset to factory defaults?'),
-          'warning', function (err, confirmed) {
-            if (err || !confirmed) return;
+        Homey.confirm(translate('settings.finetune_reset_confirm',
+          'Really reset the Finetune values to factory defaults?'), 'warning', function (err, confirmed) {
+          if (err || !confirmed) return;
 
-            show('finetune_result', translate('settings.saving', 'Writing…'), 'busy');
-            api('POST', '/finetune-reset', { deviceId: finetuneDevice.value })
-              .then(function (values) {
-                fillFinetune(values);
-                show('finetune_result', translate('settings.finetune_was_reset', 'Reset to defaults.'), 'ok');
-              })
-              .catch(function (e) { show('finetune_result', e.message || String(e), 'error'); });
-          });
+          show('finetune_result', translate('settings.saving', 'Writing…'), '');
+          api('POST', '/finetune-reset', { deviceId: finetuneDevice.value })
+            .then(function (values) {
+              fillFinetune(values);
+              show('finetune_result', translate('settings.finetune_was_reset', 'Reset to factory defaults.'), 'ok');
+            })
+            .catch(function (e) { show('finetune_result', e.message || String(e), 'error'); });
+        });
       };
 
       buildFinetuneSliders();
       finetuneDevice.addEventListener('change', loadFinetune);
 
-      /* ---------------- stored settings and device list ---------------- */
+      /* ------------------------------------------------------------------ *
+       * Stored settings and paired devices
+       * ------------------------------------------------------------------ */
 
       fields.forEach(function (key) {
         Homey.get(key, function (err, stored) {
-          if (!err && stored) document.getElementById(key).value = stored;
+          if (!err && stored) el(key).value = stored;
         });
       });
 
-      // Links to each SMARWI's own web interface. It cannot be embedded here:
-      // this page is served over HTTPS and the SMARWI only speaks HTTP, so a
-      // browser would block it as mixed content.
       api('GET', '/devices')
         .then(function (devices) {
-          var list = document.getElementById('device_links');
+          var list = el('device_links');
           list.innerHTML = '';
 
           if (!devices || devices.length === 0) {
@@ -437,12 +569,15 @@
             finetuneDevice.appendChild(option);
           });
 
-          if (devices.length > 0) loadFinetune();
+          // Prefill the test with the address of the paired device.
+          if (el('test_address').value.trim() === '') el('test_address').value = devices[0].address;
+
+          loadFinetune();
         })
         .catch(function () {});
 
       window.smarwiOnSave = function () {
-        show('status', '', null);
+        show('status', '', '');
 
         var pending = fields.length;
         var failed = false;
@@ -454,9 +589,7 @@
               show('status', err.message || String(err), 'error');
             }
             pending -= 1;
-            if (pending === 0 && !failed) {
-              show('status', translate('settings.saved', 'Saved.'), 'ok');
-            }
+            if (pending === 0 && !failed) show('status', translate('settings.saved', 'Saved.'), 'ok');
           });
         });
       };

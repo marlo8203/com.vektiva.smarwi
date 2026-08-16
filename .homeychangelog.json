@@ -13,5 +13,8 @@
   },
   "1.0.4": {
     "en": "The app settings are split into Basic and Advanced tabs with clearer headings, and the manual network scan field is gone - pairing finds the subnet on its own."
+  },
+  "1.0.5": {
+    "en": "Redesigned the app settings: card layout with matching buttons, an explanation behind every Finetune value, and the connection test prefilled with the address of the paired device."
   }
 }
