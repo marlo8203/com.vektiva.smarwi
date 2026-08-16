@@ -373,5 +373,3 @@ written against Node's core modules, so it runs on any Homey firmware.
   pushed status **over the internet as well** (`ion/<REMOTE_ID>/%<DEVICE_ID>/status`),
   control (`.../cmd`, payload `open;50`) and online/offline detection — better than the
   HTTP cloud API, which cannot read the state. It needs the `mqtt` dependency.
-* **Publishing to the Homey App Store** — `homey app publish` (needs a developer
-  account and nicer artwork than the placeholder images in `assets/`).
