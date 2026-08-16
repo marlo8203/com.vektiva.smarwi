@@ -33,10 +33,10 @@ class SmarwiDevice extends Homey.Device {
     // track of the position we last asked for.
     this.requestedPosition = null;
     this.wasBlocked = false;
-    // The device never reports whether its clamp holds the ridge, so it is
-    // tracked here: a press toggles it, and a finished movement leaves the
-    // ridge free again.
-    this.clamped = false;
+    // The device never reports whether the ridge is released, so it is tracked
+    // here: a press toggles it, and a finished movement leaves the SMARWI
+    // holding the ridge again.
+    this.released = false;
     this.wasMoving = false;
 
     await this.migrateCapabilities();
@@ -363,7 +363,7 @@ class SmarwiDevice extends Homey.Device {
       rssi: this.getCapabilityValue('smarwi_rssi'),
       lastOpenPosition: this.getStoreValue('lastOpenPosition') || 50,
       pending: this.pending ? this.pending.command : null,
-      clamped: this.clamped === true,
+      released: this.released === true,
       address: this.getSetting('address') || '',
       // The four flags the Vektiva interface shows, computed the same way.
       flags: {
@@ -399,9 +399,9 @@ class SmarwiDevice extends Homey.Device {
     // "Ready" is the flag the device itself shows: the ridge is in the device.
     await this.setCapabilityValue('smarwi_ridge_inside', status.ready).catch(this.error);
 
-    // The SMARWI grips the ridge to move the window and lets go once it is
-    // done, so a movement that just ended means the ridge is free again.
-    if (this.wasMoving && !status.moving) this.clamped = false;
+    // Moving the window means the SMARWI has the ridge, so a movement clears
+    // any release the user asked for earlier.
+    if (this.wasMoving && !status.moving) this.released = false;
     this.wasMoving = status.moving;
 
     this.lastStatus = status;
@@ -635,22 +635,24 @@ class SmarwiDevice extends Homey.Device {
    * `stop` toggles the clamp and nothing in the status reflects it - `ok` only
    * says whether the ridge is inside the device at all. So the wanted state is
    * remembered here.
-   * @param {boolean} clamped
+   * @param {boolean} released true lets the ridge move by hand
    */
-  async setRidgeFixed(clamped) {
-    if (this.clamped === clamped) return;
+  async setReleased(released) {
+    if (this.released === released) return;
 
     await this.send('stop');
-    this.clamped = clamped;
+    this.released = released;
     this.publishState();
   }
 
+  /** Holds the ridge again, so the SMARWI can move the window. */
   async fixWindow() {
-    return this.setRidgeFixed(true);
+    return this.setReleased(false);
   }
 
+  /** Lets go of the ridge, so the window can be moved by hand. */
   async releaseWindow() {
-    return this.setRidgeFixed(false);
+    return this.setReleased(true);
   }
 
   async sendRawCommand(command) {

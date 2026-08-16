@@ -53,7 +53,7 @@
   "1.1.7": {
     "en": "A released ridge stays released in the widget. The device raises its holding flag for a few seconds right after the release, which used to reset the state on its own."
   },
-  "1.2.1": {
-    "en": "Holding the ridge and having it inserted are two different things, and the widget now says which is which. The device only reports the second one, so the clamp is tracked by the app and released again once a movement finishes."
+  "1.2.2": {
+    "en": "The ridge button and the banner had their wording the wrong way round: the button offers to release the ridge, and the banner appears only while it is released."
   }
 }

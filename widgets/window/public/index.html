@@ -502,9 +502,9 @@
         var banner;
         if (!state.available) {
           banner = translate('widget.offline', 'Offline');
-        } else if (state.clamped) {
-          banner = translate('widget.banner_clamped',
-            'Ridge held — release it to move the window by hand');
+        } else if (state.released) {
+          banner = translate('widget.banner_released',
+            'Ridge released — move the window by hand');
         } else if (state.pending) {
           banner = translate('widget.pending', 'Waiting for the SMARWI to get ready…');
         } else if (moving) {
@@ -547,12 +547,12 @@
 
         // Releasing lets you move the window by hand; fixing hands it back.
         // The label says what the next press does.
-        var holding = state.clamped === true;
-        el('btn-ridge').textContent = holding
-          ? translate('widget.release_ridge', 'Release the ridge')
-          : translate('widget.fix_ridge', 'Hold the ridge');
+        var released = state.released === true;
+        el('btn-ridge').textContent = released
+          ? translate('widget.fix_ridge', 'Hold the ridge')
+          : translate('widget.release_ridge', 'Release the ridge');
         el('btn-ridge').disabled = !state.available || moving;
-        el('btn-ridge').dataset.action = holding ? 'release' : 'fix';
+        el('btn-ridge').dataset.action = released ? 'fix' : 'release';
 
         renderActive(state.position, moving);
 
