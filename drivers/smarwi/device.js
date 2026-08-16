@@ -40,6 +40,7 @@ class SmarwiDevice extends Homey.Device {
     this.registerCapabilityListener('windowcoverings_set', (value) => this.onCapabilityPosition(value));
 
     this.startSocket();
+    this.startMqtt();
     this.restartPolling();
 
     // Show what the device really has, rather than the manifest defaults.
@@ -93,13 +94,60 @@ class SmarwiDevice extends Homey.Device {
   async onUninit() {
     this.stopPolling();
     this.stopSocket();
+    this.stopMqtt();
     this.stopWatchingReadiness();
   }
 
   onDeleted() {
     this.stopPolling();
     this.stopSocket();
+    this.stopMqtt();
     this.stopWatchingReadiness();
+  }
+
+  /* ------------------------------------------------------------------ *
+   * MQTT
+   * ------------------------------------------------------------------ */
+
+  /**
+   * The app keeps one MQTT connection for every device; this only picks out
+   * the messages of this SMARWI. MQTT carries the status over the internet
+   * too, which neither the local network nor the HTTP cloud API can do.
+   */
+  startMqtt() {
+    this.stopMqtt();
+
+    this.onMqttStatus = ({ deviceId, status }) => {
+      if (deviceId !== this.getSetting('device_id')) return;
+      this.mqttOnline = true;
+      this.applyStatus(status).catch((err) => this.error('MQTT status failed:', err.message));
+    };
+
+    this.onMqttOnline = ({ deviceId, online }) => {
+      if (deviceId !== this.getSetting('device_id')) return;
+      this.mqttOnline = online;
+      this.log(`MQTT reports the device as ${online ? 'online' : 'offline'}`);
+      if (!online && !this.getLocal()) {
+        this.setUnavailable(this.homey.__('errors.unreachable')).catch(this.error);
+      }
+    };
+
+    this.homey.on('smarwi:mqtt:status', this.onMqttStatus);
+    this.homey.on('smarwi:mqtt:online', this.onMqttOnline);
+  }
+
+  stopMqtt() {
+    if (this.onMqttStatus) this.homey.off('smarwi:mqtt:status', this.onMqttStatus);
+    if (this.onMqttOnline) this.homey.off('smarwi:mqtt:online', this.onMqttOnline);
+    this.onMqttStatus = null;
+    this.onMqttOnline = null;
+  }
+
+  /** The shared MQTT client, when it is connected and this device has an ID. */
+  getMqtt() {
+    if (this.mode === 'local') return null;
+    if (!this.getSetting('device_id')) return null;
+    return this.homey.app.getMqtt();
   }
 
   /* ------------------------------------------------------------------ *
@@ -199,10 +247,18 @@ class SmarwiDevice extends Homey.Device {
   async send(command) {
     const local = this.getLocal();
     const cloud = this.getCloud();
+    const mqtt = this.getMqtt();
+
+    // MQTT sits between the two: it reaches the device over the internet like
+    // the cloud API, but the device answers with a real status afterwards.
+    const mqttSender = mqtt
+      ? { command: (cmd) => mqtt.publishCommand(this.getSetting('device_id'), cmd) }
+      : null;
 
     const transports = (this.prefersCloud
-      ? [['cloud', cloud], ['local', local]]
-      : [['local', local], ['cloud', cloud]]).filter(([, api]) => api !== null);
+      ? [['mqtt', mqttSender], ['cloud', cloud], ['local', local]]
+      : [['local', local], ['mqtt', mqttSender], ['cloud', cloud]])
+      .filter(([, api]) => api !== null);
 
     if (transports.length === 0) {
       throw new Error(this.homey.__('errors.no_transport'));
@@ -231,6 +287,11 @@ class SmarwiDevice extends Homey.Device {
 
     if (used === preferred) {
       await this.unsetWarning().catch(() => null);
+      return;
+    }
+
+    if (used === 'mqtt') {
+      await this.setWarning(this.homey.__('warnings.using_mqtt')).catch(() => null);
       return;
     }
 
@@ -277,7 +338,11 @@ class SmarwiDevice extends Homey.Device {
     try {
       status = await local.getStatus();
     } catch (err) {
-      if (this.getCloud()) {
+      if (this.getMqtt() && this.mqttOnline) {
+        // MQTT keeps both the state and the commands flowing.
+        await this.setAvailable().catch(this.error);
+        await this.unsetWarning().catch(() => null);
+      } else if (this.getCloud()) {
         // Commands still work through the cloud, so keep the device usable
         // and only warn that the state may be out of date.
         await this.setAvailable().catch(this.error);

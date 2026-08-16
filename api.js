@@ -9,6 +9,7 @@
 
 const SmarwiApi = require('./lib/SmarwiApi');
 const SmarwiCloudApi = require('./lib/SmarwiCloudApi');
+const SmarwiMqtt = require('./lib/SmarwiMqtt');
 
 /** Finds a paired device by its id and makes sure it is reachable locally. */
 function findDevice(homey, deviceId) {
@@ -89,6 +90,20 @@ module.exports = {
     const result = await cloud.testCredentials();
     homey.app.log(`Cloud credentials test: ${result.ok ? 'OK' : 'failed'} — ${result.message}`);
 
+    return result;
+  },
+
+  /**
+   * Connects to the MQTT broker and reports which devices announce themselves.
+   */
+  async testMqtt({ homey, body }) {
+    const result = await SmarwiMqtt.test({
+      host: body.host,
+      username: body.username,
+      password: body.password,
+    });
+
+    homey.app.log(`MQTT test: ${result.ok ? 'OK' : 'failed'} - ${result.message}`);
     return result;
   },
 

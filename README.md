@@ -14,8 +14,9 @@ can be installed from the test channel:
 ```
 phone (anywhere on the internet)
    └── Homey cloud ──► Homey Pro (at home, on the LAN)
-                          ├── LAN:  http://<ip>/cmd/…              ← default route
-                          └── WAN:  https://vektiva.online/api/…   ← fallback / other network
+                          ├── LAN:   http://<ip>/cmd/… + ws://<ip>/ws   ← default route
+                          ├── MQTT:  ion/<remote>/%<id>/…               ← optional, state + control
+                          └── WAN:   https://vektiva.online/api/…       ← optional, control only
 ```
 
 Homey Pro is a box in your home and your phone reaches it through the Homey cloud, so
@@ -39,6 +40,7 @@ a second flat), or when the local route is temporarily down.
 | Window held by the device | `smarwi_fixed` |
 | Window blocked | `alarm_generic` + Flow trigger *The window got blocked* |
 | Wi-Fi signal strength | `smarwi_rssi` |
+| Status and control over MQTT | optional, see below |
 
 ### Window dashboard widget
 
@@ -235,6 +237,33 @@ moves, and tells the two answers apart.
 Set it up under **Settings → Apps → Vektiva SMARWI**: Remote ID and API key (shared by
 the whole account), then fill in the **Device ID** in the settings of the window.
 
+## MQTT
+
+The SMARWI publishes its status to an MQTT broker and listens there for commands. That
+makes MQTT the only route that carries **both** the state and the control over the
+internet — the HTTP cloud API can only send commands.
+
+```
+ion/<REMOTE_ID>/%<DEVICE_ID>/status   status, same key:value format as /statusn, retained
+ion/<REMOTE_ID>/%<DEVICE_ID>/online   "1" while connected, "0" as the last will
+ion/<REMOTE_ID>/%<DEVICE_ID>/cmd      commands, ";" instead of "/" — e.g. open;50
+```
+
+Turn it on under **Settings → Apps → Vektiva SMARWI → Advanced → MQTT**. The factory
+broker `broker.vektiva.com` accepts your **Remote ID** as the user name and the
+**Remote KEY** as the password — the same credentials the device itself logs in with,
+found in the SMARWI under Settings → Basic. A broker of your own works too; set the
+same address in the SMARWI under Settings → Advanced.
+
+The app keeps a single connection for all devices and subscribes to `ion/<REMOTE_ID>/#`,
+so a device is recognised by the Device ID it reports. Commands prefer the local network
+and fall back to MQTT before the HTTP cloud API, because after an MQTT command the
+device answers with a real status.
+
+MQTT is off by default. With every SMARWI on Homey's own network the local connection
+already does everything, and the `mqtt` dependency is the only thing in this app that is
+not written against Node's core modules.
+
 ## Security note
 
 `GET http://<ip>/lcfg` returns, **without any authentication**, your Wi-Fi password,
@@ -354,6 +383,7 @@ lib/SmarwiApi.js              # local HTTP client (no dependencies)
 lib/SmarwiCloudApi.js         # vektiva.online client
 lib/SmarwiSocket.js           # WebSocket client for status push (no dependencies)
 lib/discover.js               # local /24 network scan (SMARWI has no mDNS or SSDP)
+lib/SmarwiMqtt.js             # shared MQTT client for status and commands
 drivers/smarwi/driver.js      # pairing by network scan, Flow listeners
 drivers/smarwi/device.js      # capability listeners, transport selection, state
 settings/index.html           # app settings: cloud account, connection tests, Finetune
@@ -363,13 +393,11 @@ tools/smarwi-test.js          # command line test of the local API
 tools/smarwi-cloud-test.js    # command line test of the cloud API
 ```
 
-The app has **no runtime dependencies** — the HTTP, HTTPS and WebSocket clients are
-written against Node's core modules, so it runs on any Homey firmware.
+The HTTP, HTTPS and WebSocket clients are written against Node's core modules; `mqtt`
+is the app's only runtime dependency and is used solely by the optional MQTT transport.
 
 ## Ideas for later
 
-* **MQTT through `broker.vektiva.com`** — the broker accepts a third-party client with
-  the Remote ID as the user name and the Remote KEY as the password. That would give
-  pushed status **over the internet as well** (`ion/<REMOTE_ID>/%<DEVICE_ID>/status`),
-  control (`.../cmd`, payload `open;50`) and online/offline detection — better than the
-  HTTP cloud API, which cannot read the state. It needs the `mqtt` dependency.
+* **Calibration from Homey** — the wizard needs the window physically pressed against
+  the frame, so it is a poor fit for a remote app, but reading `cfdist` back after a
+  calibration done in the web interface would at least keep the two in sync.

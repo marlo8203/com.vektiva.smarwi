@@ -28,5 +28,8 @@
   },
   "1.0.9": {
     "en": "Added the App Store description and a dark mode preview of the widget."
+  },
+  "1.1.0": {
+    "en": "Optional MQTT support. Pointed at the Vektiva broker or your own one, the app receives the status of the window over the internet as well - something the HTTP cloud API cannot do - and sends commands the same way."
   }
 }

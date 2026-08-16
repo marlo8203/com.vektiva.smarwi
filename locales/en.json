@@ -62,7 +62,8 @@
   },
   "warnings": {
     "using_cloud": "Not reachable locally — commands go through vektiva.online and the reported state may be out of date.",
-    "using_local": "vektiva.online is not responding — commands are going over the local network instead."
+    "using_local": "vektiva.online is not responding — commands are going over the local network instead.",
+    "using_mqtt": "Not reachable locally - commands and status are going through MQTT."
   },
   "widget": {
     "opening": "Opening",

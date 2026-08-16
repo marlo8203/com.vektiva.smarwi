@@ -1,6 +1,6 @@
 {
   "name": "com.vektiva.smarwi",
-  "version": "1.0.9",
+  "version": "1.1.0",
   "description": "Homey app for Vektiva SMARWI window openers (local API)",
   "main": "app.js",
   "license": "MIT",
@@ -9,7 +9,9 @@
     "validate": "homey app validate --level debug",
     "run-app": "homey app run"
   },
-  "dependencies": {},
+  "dependencies": {
+    "mqtt": "^5.15.2"
+  },
   "author": "Marian Lojka <marian.lojka@gmail.com>",
   "repository": {
     "type": "git",

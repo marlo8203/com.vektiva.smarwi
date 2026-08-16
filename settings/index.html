@@ -319,6 +319,46 @@
         <button class="btn primary" onclick="smarwiSave()" id="t-save-cloud">Save</button>
       </div>
       <div class="result" id="cloud_result"></div>
+    </div>
+
+    <div class="card">
+      <h2>MQTT</h2>
+      <p class="lead">
+        The SMARWI publishes its status to an MQTT broker and listens there for commands.
+        Unlike the HTTP cloud API this carries the <strong>state</strong> as well, so a window on
+        another network still reports back. Leave it off if all your devices are on Homey's own
+        network — the local connection already does everything.
+      </p>
+
+      <div class="field">
+        <label>Broker</label>
+        <input type="text" id="mqtt_host" placeholder="broker.vektiva.com" autocapitalize="off" autocorrect="off" spellcheck="false" />
+        <p class="hint">
+          The factory broker is <code>broker.vektiva.com</code> and it accepts your Remote ID and
+          Remote KEY. Point this at your own broker if you run one — the address has to match the
+          one in the SMARWI under Settings → Advanced.
+        </p>
+      </div>
+
+      <div class="field">
+        <label>Remote KEY</label>
+        <input type="text" id="remote_key" autocapitalize="off" autocorrect="off" spellcheck="false" />
+        <p class="hint">
+          The MQTT password, found in the SMARWI under Settings → Basic. Leave it empty to reuse
+          the API key above, which is often the same value.
+        </p>
+      </div>
+
+      <label style="display:flex;align-items:center;gap:10px;text-transform:none;font-size:14px;color:var(--ink);margin-top:16px;">
+        <input type="checkbox" id="mqtt_enabled" style="width:18px;height:18px;accent-color:var(--accent);" />
+        Use MQTT
+      </label>
+
+      <div class="row">
+        <button class="btn secondary" onclick="smarwiTestMqtt()" id="t-test-mqtt">Test broker</button>
+        <button class="btn primary" onclick="smarwiSave()">Save</button>
+      </div>
+      <div class="result" id="mqtt_result"></div>
       <div class="result" id="status"></div>
     </div>
   </div>
@@ -336,13 +376,15 @@
     function smarwiSave() { if (window.smarwiOnSave) window.smarwiOnSave(); }
     function smarwiTestCloud() { if (window.smarwiOnTestCloud) window.smarwiOnTestCloud(); }
     function smarwiTestLocal() { if (window.smarwiOnTestLocal) window.smarwiOnTestLocal(); }
+    function smarwiTestMqtt() { if (window.smarwiOnTestMqtt) window.smarwiOnTestMqtt(); }
     function smarwiFinetune(mode) { if (window.smarwiOnFinetune) window.smarwiOnFinetune(mode); }
     function smarwiFinetuneReset() { if (window.smarwiOnFinetuneReset) window.smarwiOnFinetuneReset(); }
 
     function onHomeyReady(Homey) {
       Homey.ready();
 
-      var fields = ['remote_id', 'api_key', 'test_device_id', 'test_address'];
+      var fields = ['remote_id', 'api_key', 'test_device_id', 'test_address', 'mqtt_host', 'remote_key'];
+      var checkboxes = ['mqtt_enabled'];
 
       function el(id) { return document.getElementById(id); }
       function value(id) { return el(id).value.trim(); }
@@ -543,6 +585,12 @@
         });
       });
 
+      checkboxes.forEach(function (key) {
+        Homey.get(key, function (err, stored) {
+          if (!err) el(key).checked = stored === true;
+        });
+      });
+
       api('GET', '/devices')
         .then(function (devices) {
           var list = el('device_links');
@@ -582,6 +630,10 @@
       window.smarwiOnSave = function () {
         show('status', '', '');
 
+        checkboxes.forEach(function (key) {
+          Homey.set(key, el(key).checked, function () {});
+        });
+
         var pending = fields.length;
         var failed = false;
 
@@ -607,6 +659,14 @@
 
       window.smarwiOnTestLocal = function () {
         runTest('local_result', '/test-local', { address: value('test_address') });
+      };
+
+      window.smarwiOnTestMqtt = function () {
+        runTest('mqtt_result', '/test-mqtt', {
+          host: value('mqtt_host') || 'broker.vektiva.com',
+          username: value('remote_id'),
+          password: value('remote_key') || value('api_key'),
+        });
       };
     }
   </script>
