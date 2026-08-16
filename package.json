@@ -1,6 +1,6 @@
 {
   "name": "com.vektiva.smarwi",
-  "version": "1.0.7",
+  "version": "1.0.8",
   "description": "Homey app for Vektiva SMARWI window openers (local API)",
   "main": "app.js",
   "license": "MIT",

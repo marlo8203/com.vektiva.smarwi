@@ -169,7 +169,7 @@ web interface makes, and verified against a live unit:
 | `GET /lcfa` | read the Finetune values |
 | `POST /acfa` | apply Finetune values temporarily (not stored in flash) |
 | `POST /scfa` | store Finetune values permanently |
-| `GET /rcfa` | reset the Finetune values to factory defaults |
+| `GET /rcfa` | reset the Finetune values to factory defaults — answers HTTP 500 on firmware 3.4.1 |
 | `GET /lcfg` | read the basic configuration |
 | `POST /acfg` / `POST /scfg` | apply / store the basic configuration |
 | `GET /types/swr.html` | the UI template, which carries the value ranges |
@@ -200,6 +200,12 @@ Everything else (`/settings`, `/config`, `/list`, …) answers HTTP 500.
 
 **Apply vs Save:** `/acfa` changes the running device only and is forgotten on the
 next restart — good for trying values out. `/scfa` writes to flash and is permanent.
+
+**Reset to defaults** calls `/rcfa`, the same endpoint the device's own web interface
+uses. Firmware 3.4.1 answers HTTP 500 to it, so the app reports that and points at the
+SMARWI web interface instead. It was not investigated further on purpose: a reset that
+did work could wipe the calibration, and recovering that needs the physical calibration
+wizard.
 
 ### Cloud (vektiva.online)
 
