@@ -58,5 +58,8 @@
   },
   "1.2.3": {
     "en": "Stopping the window part way no longer leaves the old percentage on screen. The SMARWI counts from the frame sensor and cannot say where the sash ended up, so the position is withheld until the next full open or close."
+  },
+  "1.3.0": {
+    "en": "Stop moved from the up/down/idle control to a button of its own, so the device tile no longer shows two ways to move the same window. New App Store artwork, a driver icon of its own, and a widget preview drawn rather than screenshotted."
   }
 }

@@ -1,0 +1,129 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 700" width="1000" height="700">
+  <!-- App Store image: a room with the top-hung window tilted open and fresh air
+       streaming in. Author: Marian Lojka <marian.lojka@gmail.com> -->
+  <defs>
+    <linearGradient id="wall" x1="0" y1="0" x2="0.35" y2="1">
+      <stop offset="0%" stop-color="#fdf7ee"/>
+      <stop offset="60%" stop-color="#e7edf5"/>
+      <stop offset="100%" stop-color="#c6d6e6"/>
+    </linearGradient>
+    <linearGradient id="floor" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#d9c3a4"/>
+      <stop offset="100%" stop-color="#c2a781"/>
+    </linearGradient>
+    <linearGradient id="sky" x1="0" y1="0" x2="0.2" y2="1">
+      <stop offset="0%" stop-color="#bde9ff"/>
+      <stop offset="55%" stop-color="#6cc4ef"/>
+      <stop offset="100%" stop-color="#3ba6e0"/>
+    </linearGradient>
+    <radialGradient id="sun" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0%" stop-color="#fff6cf" stop-opacity="1"/>
+      <stop offset="42%" stop-color="#ffe999" stop-opacity="0.75"/>
+      <stop offset="100%" stop-color="#ffe999" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="hill" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#8fd07a"/>
+      <stop offset="100%" stop-color="#4f9c53"/>
+    </linearGradient>
+    <linearGradient id="hillFar" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#a9dc9a"/>
+      <stop offset="100%" stop-color="#77bd77"/>
+    </linearGradient>
+    <linearGradient id="frame" x1="0" y1="0" x2="0.4" y2="1">
+      <stop offset="0%" stop-color="#ffffff"/>
+      <stop offset="100%" stop-color="#dfe7ee"/>
+    </linearGradient>
+    <linearGradient id="sashGlass" x1="0.05" y1="0" x2="0.95" y2="1">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.42"/>
+      <stop offset="45%" stop-color="#dff1fb" stop-opacity="0.26"/>
+      <stop offset="100%" stop-color="#ffffff" stop-opacity="0.18"/>
+    </linearGradient>
+    <linearGradient id="pot" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#e08a5c"/>
+      <stop offset="100%" stop-color="#b96a41"/>
+    </linearGradient>
+    <linearGradient id="body" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#ffffff"/>
+      <stop offset="100%" stop-color="#d5dde5"/>
+    </linearGradient>
+    <clipPath id="opening">
+      <rect x="300" y="66" width="424" height="516" rx="4"/>
+    </clipPath>
+  </defs>
+
+  <!-- room -->
+  <rect width="1000" height="700" fill="url(#wall)"/>
+  <rect y="612" width="1000" height="88" fill="url(#floor)"/>
+  <rect y="600" width="1000" height="14" fill="#eef3f8"/>
+
+  <path d="M300 612 L724 612 L862 700 L162 700 Z" fill="#fff3d2" opacity="0.55"/>
+
+  <!-- the view outside -->
+  <g clip-path="url(#opening)">
+    <rect x="300" y="66" width="424" height="516" fill="url(#sky)"/>
+    <circle cx="404" cy="176" r="150" fill="url(#sun)"/>
+    <circle cx="404" cy="176" r="42" fill="#fff6cf"/>
+    <g fill="#ffffff" opacity="0.72">
+      <ellipse cx="596" cy="196" rx="62" ry="24"/>
+      <ellipse cx="632" cy="184" rx="42" ry="26"/>
+      <ellipse cx="558" cy="188" rx="34" ry="19"/>
+      <ellipse cx="356" cy="300" rx="44" ry="17"/>
+      <ellipse cx="386" cy="292" rx="30" ry="18"/>
+    </g>
+    <path d="M300 452 q92 -66 186 -18 q86 44 238 -6 v154 H300 Z" fill="url(#hillFar)"/>
+    <path d="M300 512 q120 -54 224 -8 q104 46 200 4 v74 H300 Z" fill="url(#hill)"/>
+    <g fill="#3f8a4a">
+      <ellipse cx="644" cy="506" rx="30" ry="38"/>
+      <rect x="640" y="530" width="8" height="34"/>
+      <ellipse cx="392" cy="524" rx="24" ry="30"/>
+      <rect x="388" y="544" width="7" height="28"/>
+    </g>
+  </g>
+
+  <!-- window frame -->
+  <rect x="282" y="48" width="460" height="552" rx="8" fill="none" stroke="url(#frame)" stroke-width="36"/>
+  <rect x="282" y="48" width="460" height="552" rx="8" fill="none" stroke="#b9c7d4" stroke-width="2.5"/>
+  <rect x="300" y="66" width="424" height="516" rx="4" fill="none" stroke="#9fb2c2" stroke-width="2.5"/>
+  <rect x="286" y="588" width="452" height="26" rx="6" fill="url(#frame)" stroke="#b9c7d4" stroke-width="2.5"/>
+
+  <!-- SMARWI on the frame, with the ridge reaching the sash -->
+  <g>
+    <rect x="596" y="70" width="132" height="34" rx="12" fill="url(#body)" stroke="#a8b6c4" stroke-width="2.5"/>
+    <rect x="612" y="80" width="58" height="14" rx="5" fill="#c3cfda"/>
+    <circle cx="704" cy="87" r="6" fill="#0aa1dd"/>
+    <rect x="520" y="80" width="78" height="15" rx="4" fill="#eef3f8" stroke="#a8b6c4" stroke-width="2.5"/>
+  </g>
+
+  <!-- the sash, hinged at the bottom and tilted out at the top -->
+  <g>
+    <polygon points="306,576 356,158 668,158 718,576" fill="none" stroke="url(#frame)" stroke-width="26" stroke-linejoin="round"/>
+    <polygon points="306,576 356,158 668,158 718,576" fill="url(#sashGlass)" stroke="#9db4c6" stroke-width="3" stroke-linejoin="round"/>
+    <path d="M372 520 L400 232" stroke="#ffffff" stroke-width="13" stroke-linecap="round" opacity="0.45"/>
+    <path d="M420 508 L442 288" stroke="#ffffff" stroke-width="6" stroke-linecap="round" opacity="0.32"/>
+    <rect x="694" y="352" width="26" height="72" rx="10" fill="#8d9dad"/>
+  </g>
+
+  <!-- fresh air flowing into the room -->
+  <g fill="none" stroke="#ffffff" stroke-linecap="round" stroke-width="11" opacity="0.92">
+    <path d="M262 236 q-72 26 -132 4 q-56 -18 -74 22"/>
+    <path d="M270 322 q-92 34 -168 8 q-62 -22 -78 24" opacity="0.75"/>
+    <path d="M256 414 q-64 30 -122 12" opacity="0.55"/>
+  </g>
+  <g fill="#7fc98d">
+    <ellipse cx="150" cy="238" rx="17" ry="9" transform="rotate(-18 150 238)"/>
+    <ellipse cx="88" cy="336" rx="14" ry="7" transform="rotate(12 88 336)"/>
+  </g>
+
+  <!-- plant in the corner -->
+  <g>
+    <path d="M126 560 q-48 -66 -14 -128 q26 54 20 128 Z" fill="#5fae6a"/>
+    <path d="M138 562 q56 -52 40 -122 q-46 44 -56 122 Z" fill="#79c47f"/>
+    <path d="M132 566 q-4 -74 26 -110" fill="none" stroke="#4d9a5b" stroke-width="6" stroke-linecap="round"/>
+    <path d="M96 604 h84 l-12 66 a10 10 0 0 1 -10 8 h-40 a10 10 0 0 1 -10 -8 Z" fill="url(#pot)"/>
+    <rect x="90" y="588" width="96" height="22" rx="7" fill="#e79a6d"/>
+  </g>
+
+  <!-- curtain -->
+  <path d="M792 44 q34 168 8 300 q-24 132 6 268 h94 V44 Z" fill="#ffffff" opacity="0.55"/>
+  <path d="M840 44 q26 176 4 306 q-20 122 4 262" fill="none" stroke="#c9d8e6" stroke-width="4" opacity="0.7"/>
+</svg>

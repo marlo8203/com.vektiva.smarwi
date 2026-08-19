@@ -1,11 +1,11 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
-  <!-- Top-hung window tilting open, with fresh air coming in.
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 960" width="960" height="960">
+  <!-- Driver icon: the SMARWI unit with the toothed ridge running through it.
        Author: Marian Lojka <marian.lojka@gmail.com> -->
-  <g fill="none" stroke="#000" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round">
-    <rect x="14" y="10" width="36" height="44" rx="3"/>
-    <path d="M18 22 h28"/>
-    <path d="M18 22 l3.5 -6 h21 l3.5 6"/>
-    <path d="M6 32 q6 -5 12 0" opacity="0.85"/>
-    <path d="M4 41 q6 -5 12 0" opacity="0.6"/>
+  <g fill="none" stroke="#000" stroke-width="58" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M52 480 H840"/>
+    <path d="M118 480 V600"/>
+    <path d="M232 480 V600"/>
+    <path d="M346 480 V600"/>
+    <rect x="428" y="240" width="480" height="480" rx="98"/>
   </g>
 </svg>

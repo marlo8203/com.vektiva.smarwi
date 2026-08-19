@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
+  <!-- Widget preview: a simplified sketch of the Window widget.
+       Author: Marian Lojka <marian.lojka@gmail.com> -->
+  <rect x="96" y="176" width="832" height="672" rx="64" fill="#23262a" stroke="#33383e" stroke-width="6"/>
+
+  <!-- the window, tilted open at the top -->
+  <g>
+    <rect x="168" y="264" width="272" height="344" rx="20" fill="#2a2e33" stroke="#4d545c" stroke-width="10"/>
+    <polygon points="192,584 228,320 380,320 416,584" fill="#2d3f4c" stroke="#4d545c" stroke-width="10" stroke-linejoin="round"/>
+  </g>
+  <g fill="none" stroke="#22b0e8" stroke-width="14" stroke-linecap="round" opacity="0.9">
+    <path d="M118 400 q44 -34 88 0"/>
+    <path d="M132 494 q44 -34 88 0"/>
+  </g>
+
+  <!-- the three buttons -->
+  <rect x="512" y="264" width="344" height="100" rx="50" fill="#22b0e8"/>
+  <rect x="512" y="392" width="344" height="100" rx="50" fill="#31363c"/>
+  <rect x="512" y="520" width="344" height="100" rx="50" fill="#31363c"/>
+
+  <!-- the position slider -->
+  <rect x="168" y="700" width="688" height="24" rx="12" fill="#33383e"/>
+  <rect x="168" y="700" width="452" height="24" rx="12" fill="#22b0e8"/>
+  <circle cx="620" cy="712" r="44" fill="#3b4148" stroke="#33383e" stroke-width="6"/>
+</svg>

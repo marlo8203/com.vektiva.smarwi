@@ -1,6 +1,6 @@
 {
   "id": "com.vektiva.smarwi",
-  "version": "1.2.3",
+  "version": "1.3.0",
   "compatibility": ">=12.3.0",
   "sdk": 3,
   "platforms": [
@@ -10,7 +10,7 @@
     "en": "Vektiva SMARWI"
   },
   "description": {
-    "en": "Control Vektiva SMARWI window openers over your local network, with vektiva.online as an optional fallback."
+    "en": "Fresh air, exactly when your home needs it."
   },
   "category": [
     "climate"
@@ -118,6 +118,16 @@
       "setable": false,
       "uiComponent": "sensor",
       "insights": true
+    },
+    "smarwi_stop": {
+      "type": "boolean",
+      "title": {
+        "en": "Stop"
+      },
+      "getable": false,
+      "setable": true,
+      "uiComponent": "button",
+      "icon": "/assets/capability/stop.svg"
     }
   },
   "flow": {
@@ -306,7 +316,7 @@
       "class": "windowcoverings",
       "capabilities": [
         "windowcoverings_set",
-        "windowcoverings_state",
+        "smarwi_stop",
         "smarwi_position",
         "smarwi_fixed",
         "smarwi_ridge_inside",

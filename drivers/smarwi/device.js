@@ -41,10 +41,14 @@ class SmarwiDevice extends Homey.Device {
     // A movement cut short by Stop leaves the sash somewhere the device cannot
     // name, so the percentage is withheld until a full open or close resets it.
     this.positionUnknown = false;
+    // `up`, `down` or `idle`. Kept here rather than in a capability, because
+    // windowcoverings_state next to windowcoverings_set would give the device
+    // tile two controls for the same thing.
+    this.movement = 'idle';
 
     await this.migrateCapabilities();
 
-    this.registerCapabilityListener('windowcoverings_state', (value) => this.onCapabilityState(value));
+    this.registerCapabilityListener('smarwi_stop', () => this.stopWindow());
     this.registerCapabilityListener('windowcoverings_set', (value) => this.onCapabilityPosition(value));
 
     // A device paired before this setting existed has no value for it.
@@ -59,7 +63,8 @@ class SmarwiDevice extends Homey.Device {
 
   /** Homey does not add new capabilities to already paired devices by itself. */
   async migrateCapabilities() {
-    const wanted = ['smarwi_position', 'smarwi_fixed', 'smarwi_ridge_inside', 'alarm_generic', 'smarwi_rssi'];
+    const wanted = ['smarwi_stop', 'smarwi_position', 'smarwi_fixed', 'smarwi_ridge_inside',
+      'alarm_generic', 'smarwi_rssi'];
 
     for (const capability of wanted) {
       if (this.hasCapability(capability)) continue;
@@ -69,6 +74,12 @@ class SmarwiDevice extends Homey.Device {
       } catch (err) {
         this.error(`Could not add capability ${capability}:`, err.message);
       }
+    }
+
+    // Dropped in 1.3.0; it doubled up with windowcoverings_set on the tile.
+    if (this.hasCapability('windowcoverings_state')) {
+      await this.removeCapability('windowcoverings_state').catch(this.error);
+      this.log('Removed capability windowcoverings_state');
     }
   }
 
@@ -359,7 +370,7 @@ class SmarwiDevice extends Homey.Device {
       name: this.getName(),
       available: this.getAvailable(),
       position,
-      state: this.getCapabilityValue('windowcoverings_state') || 'idle',
+      state: this.movement,
       fixed: this.getCapabilityValue('smarwi_fixed') === true,
       ridgeInside: this.getCapabilityValue('smarwi_ridge_inside') === true,
       blocked: this.getCapabilityValue('alarm_generic') === true,
@@ -441,8 +452,8 @@ class SmarwiDevice extends Homey.Device {
     if (status.opening) state = 'up';
     else if (status.closing) state = 'down';
 
+    this.movement = state;
     await this.setCapabilityValue('windowcoverings_set', position / 100).catch(this.error);
-    await this.setCapabilityValue('windowcoverings_state', state).catch(this.error);
     await this.setCapabilityValue('smarwi_position', position).catch(this.error);
 
     this.publishState();
@@ -489,20 +500,6 @@ class SmarwiDevice extends Homey.Device {
   /* ------------------------------------------------------------------ *
    * Capability listeners
    * ------------------------------------------------------------------ */
-
-  async onCapabilityState(value) {
-    switch (value) {
-      case 'up':
-        return this.openWindow(this.requestedPosition && this.requestedPosition > 0
-          ? this.requestedPosition
-          : 100);
-      case 'down':
-        return this.closeWindow();
-      case 'idle':
-      default:
-        return this.stopWindow();
-    }
-  }
 
   async onCapabilityPosition(value) {
     const pct = Math.round(value * 100);
@@ -595,7 +592,7 @@ class SmarwiDevice extends Homey.Device {
     this.rememberOpening(pct);
 
     await this.requestMove(`open/${pct}`);
-    await this.setCapabilityValue('windowcoverings_state', 'up').catch(this.error);
+    this.movement = 'up';
     await this.setCapabilityValue('windowcoverings_set', pct / 100).catch(this.error);
   }
 
@@ -604,7 +601,7 @@ class SmarwiDevice extends Homey.Device {
     this.positionUnknown = false;
 
     await this.requestMove('close');
-    await this.setCapabilityValue('windowcoverings_state', 'down').catch(this.error);
+    this.movement = 'down';
     await this.setCapabilityValue('windowcoverings_set', 0).catch(this.error);
   }
 
@@ -634,7 +631,7 @@ class SmarwiDevice extends Homey.Device {
     // the window is fully opened or closed again the position is guesswork.
     this.positionUnknown = true;
     this.requestedPosition = null;
-    await this.setCapabilityValue('windowcoverings_state', 'idle').catch(this.error);
+    this.movement = 'idle';
   }
 
   /**

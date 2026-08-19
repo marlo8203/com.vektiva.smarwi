@@ -32,8 +32,8 @@ a second flat), or when the local route is temporarily down.
 
 | Feature | Homey capability / card |
 |---|---|
-| Open / close / stop | `windowcoverings_state` |
-| Open to X % | `windowcoverings_set` + Flow action *Open to [X] %* |
+| Open, close and open to X % | `windowcoverings_set` + Flow actions *Open to [X] %* / *Close the window* |
+| Stop a movement | `smarwi_stop` button + Flow action *Stop the movement* |
 | Fix / release the ridge | `smarwi_ridge_inside` switch + Flow actions *Fix the ridge* / *Release the ridge* |
 | Raw command (`prio`, `queue`, …) | Flow action *Send a raw command* |
 | Opening percentage (logged in Insights) | `smarwi_position` |

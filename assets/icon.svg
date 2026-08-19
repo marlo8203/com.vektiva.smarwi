@@ -1,11 +1,11 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
-  <!-- Top-hung window tilting open, with fresh air coming in.
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 960" width="960" height="960">
+  <!-- App icon: a top-hung window tilted open, with fresh air coming in.
        Author: Marian Lojka <marian.lojka@gmail.com> -->
-  <g fill="none" stroke="#000" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round">
-    <rect x="14" y="10" width="36" height="44" rx="3"/>
-    <path d="M18 22 h28"/>
-    <path d="M18 22 l3.5 -6 h21 l3.5 6"/>
-    <path d="M6 32 q6 -5 12 0" opacity="0.85"/>
-    <path d="M4 41 q6 -5 12 0" opacity="0.6"/>
+  <g fill="none" stroke="#000" stroke-width="54" stroke-linecap="round" stroke-linejoin="round">
+    <rect x="330" y="80" width="550" height="800" rx="46"/>
+    <path d="M386 372 H824"/>
+    <path d="M386 372 L446 258 H764 L824 372"/>
+    <path d="M60 508 q92 -74 184 0" opacity="0.9"/>
+    <path d="M108 700 q92 -74 184 0" opacity="0.65"/>
   </g>
 </svg>
