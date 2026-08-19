@@ -1,0 +1,12 @@
+Dear Marian Lojka,
+Thank you for submitting your app Vektiva SMARWI for review. 
+Unfortunately, your app has not passed the certification process, due to the following:
+— Your app's readme contains a URL. URLs in the readme are not allowed. Please remove the URL and refer users to the links section of your App Store page instead. Check out our App Store Guidelines for more information on this topic: https://apps.developer.homey.app/app-store/guidelines#1-3-readme
+— Some of your app's driver icons are identical to the App Icon. Please make sure each driver has its own icon, so users can easily recognize the driver they need. For more information and help on this topic check out our App Store Guidelines: https://apps.developer.homey.app/app-store/guidelines#1-5-icons
+— Your app image and driver image are almost identical and both appear to be generated illustrations rather than real product images. Please provide a unique, lively app image that represents the purpose of your app, and a separate driver image depicting the actual SMARWI device on a white background. Check out our App Store Guidelines for more information: https://apps.developer.homey.app/app-store/guidelines#1-4-images
+— Your widget preview contains text, which is not allowed. Please check out our App Store Guidelines for more information: https://apps.developer.homey.app/app-store/guidelines#1-10-widget-previews
+— Your Widget preview seems to be a screenshot of the Widget. This is not allowed. Please check out our App Store Guidelines for more information: https://apps.developer.homey.app/app-store/guidelines#id-1.10.-widget-previews 
+Additionally, we have a couple of soft points for your next submission:
+- Your description is accurate but reads more like a technical explanation than a tagline. A shorter, more engaging one-liner would make a stronger first impression. Check out our App Store Guidelines for more information: https://apps.developer.homey.app/app-store/guidelines#1-2-description
+- The driver uses both the windowcoverings_set and windowcoverings_state capabilities simultaneously. Per our SDK best practices, using both at the same time may result in a double UI component for users. Please check out our documentation for more information: https://apps.developer.homey.app/the-basics/devices/best-practices/window-coverings
+Once you have solved these issues, you can submit a new version for certification again.
