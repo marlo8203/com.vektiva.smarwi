@@ -1,25 +1,39 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
   <!-- Widget preview: a simplified sketch of the Window widget.
        Author: Marian Lojka <marian.lojka@gmail.com> -->
-  <rect x="96" y="176" width="832" height="672" rx="64" fill="#ffffff" stroke="#e2e8ef" stroke-width="6"/>
+  <defs>
+    <linearGradient id="glass" x1="0.1" y1="0" x2="0.9" y2="1">
+      <stop offset="0%" stop-color="#d7f0ff"/>
+      <stop offset="100%" stop-color="#84cdf0"/>
+    </linearGradient>
+  </defs>
 
-  <!-- the window, tilted open at the top -->
+  <rect x="64" y="144" width="896" height="736" rx="72" fill="#ffffff" stroke="#e3e9f0" stroke-width="6"/>
+
+  <!-- the window, tilted open at the top, with air coming in -->
   <g>
-    <rect x="168" y="264" width="272" height="344" rx="20" fill="#f2f6fa" stroke="#c2cdd9" stroke-width="10"/>
-    <polygon points="192,584 228,320 380,320 416,584" fill="#e6f3fb" stroke="#c2cdd9" stroke-width="10" stroke-linejoin="round"/>
-  </g>
-  <g fill="none" stroke="#0aa1dd" stroke-width="14" stroke-linecap="round" opacity="0.9">
-    <path d="M118 400 q44 -34 88 0"/>
-    <path d="M132 494 q44 -34 88 0"/>
+    <rect x="128" y="232" width="304" height="376" rx="26" fill="url(#glass)" stroke="#b9c7d5" stroke-width="9"/>
+    <circle cx="286" cy="266" r="26" fill="#ffd76b"/>
+    <polygon points="154,582 190,300 370,300 406,582" fill="#ffffff" stroke="#b9c7d5" stroke-width="9" stroke-linejoin="round"/>
+    <g fill="none" stroke="#0aa1dd" stroke-width="15" stroke-linecap="round">
+      <path d="M176 408 q46 -36 92 0"/>
+      <path d="M198 486 q46 -36 92 0"/>
+      <path d="M176 564 q46 -36 92 0"/>
+    </g>
   </g>
 
-  <!-- the three buttons -->
-  <rect x="512" y="264" width="344" height="100" rx="50" fill="#0aa1dd"/>
-  <rect x="512" y="392" width="344" height="100" rx="50" fill="#eef2f6"/>
-  <rect x="512" y="520" width="344" height="100" rx="50" fill="#eef2f6"/>
+  <!-- open, stop and close -->
+  <rect x="488" y="232" width="392" height="104" rx="52" fill="#0aa1dd"/>
+  <rect x="488" y="368" width="392" height="104" rx="52" fill="#eef2f7"/>
+  <rect x="488" y="504" width="392" height="104" rx="52" fill="#eef2f7"/>
 
   <!-- the position slider -->
-  <rect x="168" y="700" width="688" height="24" rx="12" fill="#e2e8ef"/>
-  <rect x="168" y="700" width="452" height="24" rx="12" fill="#0aa1dd"/>
-  <circle cx="620" cy="712" r="44" fill="#ffffff" stroke="#e2e8ef" stroke-width="6"/>
+  <rect x="128" y="678" width="752" height="26" rx="13" fill="#e3e9f0"/>
+  <rect x="128" y="678" width="480" height="26" rx="13" fill="#0aa1dd"/>
+  <circle cx="608" cy="691" r="46" fill="#ffffff" stroke="#e3e9f0" stroke-width="6"/>
+
+  <!-- the status tiles -->
+  <rect x="128" y="774" width="232" height="72" rx="28" fill="#f1f5f9"/>
+  <rect x="388" y="774" width="232" height="72" rx="28" fill="#f1f5f9"/>
+  <rect x="648" y="774" width="232" height="72" rx="28" fill="#f1f5f9"/>
 </svg>

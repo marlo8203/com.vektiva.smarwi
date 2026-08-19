@@ -5,6 +5,11 @@ over your **local network**, with the **vektiva.online** cloud as an optional fa
 
 Author: Marian Lojka <marian.lojka@gmail.com> · MIT licence
 
+<p>
+  <img src="assets/images/large.png" width="420" alt="A room with the window tilted open by a SMARWI">
+  <img src="drivers/smarwi/assets/images/large.png" width="220" alt="The SMARWI unit with its ridge">
+</p>
+
 Submitted to the Homey App Store and currently in certification. Until it goes live it
 can be installed from the test channel:
 <https://homey.app/a/com.vektiva.smarwi/test/>
@@ -43,6 +48,13 @@ a second flat), or when the local route is temporarily down.
 | Status and control over MQTT | optional, see below |
 
 ### Window dashboard widget
+
+The App Store preview of the widget, light and dark:
+
+<p>
+  <img src="widgets/window/preview-light.png" width="200" alt="Widget preview, light">
+  <img src="widgets/window/preview-dark.png" width="200" alt="Widget preview, dark">
+</p>
 
 <p>
   <img src="docs/closed.png" width="290" alt="The Window widget with the window closed">
@@ -389,6 +401,17 @@ network rather than the LAN. The subnet therefore comes from
 `homey.cloud.getLocalAddress()`, and can be overridden in the app settings.
 
 ## Preparing the SMARWI
+
+The unit is mounted on the window **frame**; the toothed **ridge** is screwed to the
+**sash**. Opening the window draws the ridge out of the unit, which is also how the
+SMARWI measures the position - it counts revolutions from its frame sensor and has no
+absolute position sensor. That single fact explains the readiness flag, the trip through
+the frame on every reposition, and why the percentage is withheld after a Stop part way.
+
+<p>
+  <img src="docs/vektiva-product4.jpg" width="420" alt="The SMARWI on the frame with the ridge reaching the sash">
+  <img src="docs/vektiva-product3.jpg" width="420" alt="The ridge running through the unit, seen from inside">
+</p>
 
 In its web interface (Settings → Basic) set **Wifi Mode** to `Client`, pick your Wi-Fi
 network and enter the password. The cloud (`Remote ID` / `Remote KEY`) is not needed
