@@ -86,34 +86,41 @@
   <rect x="300" y="66" width="424" height="516" rx="4" fill="none" stroke="#9fb2c2" stroke-width="2.5"/>
   <rect x="286" y="588" width="452" height="26" rx="6" fill="url(#frame)" stroke="#b9c7d4" stroke-width="2.5"/>
 
-  <!-- the sash, hinged at the bottom and tilted out at the top -->
+  <!-- the sash, hinged at the bottom and tilted into the room at the top, so
+       its top edge is nearer the viewer and reads wider than the opening -->
   <g>
-    <polygon points="306,576 356,158 668,158 718,576" fill="none" stroke="url(#frame)" stroke-width="26" stroke-linejoin="round"/>
-    <polygon points="306,576 356,158 668,158 718,576" fill="url(#sashGlass)" stroke="#9db4c6" stroke-width="3" stroke-linejoin="round"/>
-    <path d="M372 520 L400 232" stroke="#ffffff" stroke-width="13" stroke-linecap="round" opacity="0.45"/>
-    <path d="M420 508 L442 288" stroke="#ffffff" stroke-width="6" stroke-linecap="round" opacity="0.32"/>
-    <rect x="694" y="352" width="26" height="72" rx="10" fill="#8d9dad"/>
+    <polygon points="300,66 724,66 724,80 300,80" fill="#5c7c93" opacity="0.18"/>
+    <polygon points="284,166 740,166 740,196 284,196" fill="#3f5f76" opacity="0.16"/>
+    <polygon points="306,578 284,192 740,192 718,578" fill="none" stroke="url(#frame)" stroke-width="26" stroke-linejoin="round"/>
+    <polygon points="306,578 284,192 740,192 718,578" fill="url(#sashGlass)" stroke="#9db4c6" stroke-width="3" stroke-linejoin="round"/>
+    <path d="M366 528 L354 262" stroke="#ffffff" stroke-width="13" stroke-linecap="round" opacity="0.45"/>
+    <path d="M424 512 L414 302" stroke="#ffffff" stroke-width="6" stroke-linecap="round" opacity="0.32"/>
+    <rect x="698" y="356" width="24" height="72" rx="10" fill="#8d9dad"/>
   </g>
 
-
-  <!-- The SMARWI sits on the window frame; the ridge is screwed to the sash,
-       so an open window has it drawn out between the two. -->
+  <!-- The SMARWI is mounted on the sash; the ridge reaches back up to a bracket
+       on the frame, drawn out because the window stands open. -->
   <g>
-    <rect x="577" y="88" width="10" height="66" rx="2.5" fill="#f2f6fa" stroke="#8d9dad" stroke-width="1.6"/>
+    <rect x="566" y="66" width="34" height="11" rx="3" fill="#ffffff" stroke="#8d9dad" stroke-width="1.6"/>
+    <rect x="580" y="74" width="10" height="118" rx="2.5" fill="#f2f6fa" stroke="#8d9dad" stroke-width="1.6"/>
     <g fill="#c6d2de" stroke="#8d9dad" stroke-width="1">
-      <rect x="587" y="96" width="5" height="5" rx="1.2"/>
-      <rect x="587" y="105" width="5" height="5" rx="1.2"/>
-      <rect x="587" y="114" width="5" height="5" rx="1.2"/>
-      <rect x="587" y="123" width="5" height="5" rx="1.2"/>
-      <rect x="587" y="132" width="5" height="5" rx="1.2"/>
-      <rect x="587" y="141" width="5" height="5" rx="1.2"/>
+      <rect x="590" y="84" width="5" height="5" rx="1.2"/>
+      <rect x="590" y="94" width="5" height="5" rx="1.2"/>
+      <rect x="590" y="104" width="5" height="5" rx="1.2"/>
+      <rect x="590" y="114" width="5" height="5" rx="1.2"/>
+      <rect x="590" y="124" width="5" height="5" rx="1.2"/>
+      <rect x="590" y="134" width="5" height="5" rx="1.2"/>
+      <rect x="590" y="144" width="5" height="5" rx="1.2"/>
+      <rect x="590" y="154" width="5" height="5" rx="1.2"/>
+      <rect x="590" y="164" width="5" height="5" rx="1.2"/>
+      <rect x="590" y="174" width="5" height="5" rx="1.2"/>
     </g>
-    <rect x="554" y="63" width="62" height="9" rx="4" fill="#ffffff" stroke="#8d9dad" stroke-width="1.6"/>
-    <rect x="560" y="70" width="50" height="23" rx="6" fill="url(#body)" stroke="#8d9dad" stroke-width="1.6"/>
-    <rect x="560" y="77" width="50" height="8" fill="#31363b" opacity="0.88"/>
-    <circle cx="614" cy="82" r="5.5" fill="url(#body)" stroke="#8d9dad" stroke-width="1.6"/>
-    <circle cx="567" cy="67" r="2.4" fill="#f2c012"/>
-    <circle cx="603" cy="89" r="1.8" fill="#35c15e"/>
+    <rect x="559" y="187" width="62" height="9" rx="4" fill="#ffffff" stroke="#8d9dad" stroke-width="1.6"/>
+    <rect x="565" y="194" width="50" height="23" rx="6" fill="url(#body)" stroke="#8d9dad" stroke-width="1.6"/>
+    <rect x="565" y="201" width="50" height="8" fill="#31363b" opacity="0.88"/>
+    <circle cx="619" cy="206" r="5.5" fill="url(#body)" stroke="#8d9dad" stroke-width="1.6"/>
+    <circle cx="572" cy="191" r="2.4" fill="#f2c012"/>
+    <circle cx="608" cy="213" r="1.8" fill="#35c15e"/>
   </g>
 
   <!-- fresh air flowing into the room -->
