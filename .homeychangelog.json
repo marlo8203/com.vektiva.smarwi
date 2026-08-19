@@ -61,5 +61,8 @@
   },
   "1.3.0": {
     "en": "Stop moved from the up/down/idle control to a button of its own, so the device tile no longer shows two ways to move the same window. New App Store artwork, a driver icon of its own, and a widget preview drawn rather than screenshotted."
+  },
+  "1.3.1": {
+    "en": "The App Store image now shows the window tilting into the room, which is how a SMARWI window opens, with the unit on the sash and its ridge drawn back up to the frame."
   }
 }
