@@ -531,21 +531,17 @@ class SmarwiDevice extends Homey.Device {
       return this.send(command);
     }
 
-    // An error also clears `ok`, and there `stop` would not engage anything -
-    // it would let go of the ridge. Let the device answer for itself instead.
-    if (this.lastStatus && this.lastStatus.error) {
-      this.log(`Device reports an error (s:${this.lastStatus.stateCode} `
-        + `e:${this.lastStatus.errorCode}); sending "${command}" without touching the ridge`);
-      this.clearPending();
-      return this.send(command);
-    }
-
-    this.log(`Device is not ready, deferring "${command}" and fixing the ridge`);
+    const status = this.lastStatus;
+    this.log(status && status.error
+      ? `Device is in error s:${status.stateCode} e:${status.errorCode}; `
+        + `resetting it and deferring "${command}"`
+      : `Device is not ready, deferring "${command}" and fixing the ridge`);
     this.pending = { command, at: Date.now() };
     this.publishState();
     this.watchReadiness();
 
-    // Engaging the ridge; applyStatus() fires the deferred command on ok:1.
+    // `stop` engages the ridge and clears a latched error; applyStatus() fires
+    // the deferred command as soon as the device reports ok:1.
     return this.send('stop');
   }
 
@@ -631,6 +627,14 @@ class SmarwiDevice extends Homey.Device {
    */
   async stopWindow() {
     this.clearPending();
+
+    if (this.lastStatus && this.lastStatus.error && !this.lastStatus.moving) {
+      // One `stop` clears the error; a second one would let go of the ridge.
+      this.log(`Clearing error s:${this.lastStatus.stateCode} `
+        + `e:${this.lastStatus.errorCode}`);
+      await this.send('stop');
+      return;
+    }
 
     if (this.lastStatus && !this.lastStatus.moving) {
       this.log('Nothing to stop; not touching the ridge');

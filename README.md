@@ -147,9 +147,20 @@ cancels it.
 `ok` is **not** a ridge sensor, even though it usually moves with one. Anything that
 stops the device acting clears it, an error included — a window locked to the frame
 reports `ok:0 ro:0`, meaning "cannot move" and "ridge is in place" at the same time. So
-the app shows `ro` as the ridge and keeps `ok` for the deferral logic only. In that
-error state it also skips the engaging `stop`, which would otherwise let go of a ridge
-that was never loose.
+the app shows `ro` as the ridge and keeps `ok` for the deferral logic only.
+
+### Errors latch, and `stop` is the reset
+
+An error stays in `s` until something clears it. A window locked to the frame reports
+`s:10` (`ERR_WINDOW_LOCKED`) with `ok:0`, and it stays there — unlocking the window by
+hand changes nothing, and every later command is ignored.
+
+A single `stop` is the reset. Measured on firmware 3.4.1, it takes the device from
+`s:10 e:10 ok:0` to `s:250 e:0 ok:1` within two seconds and leaves `ro` untouched, so it
+does not let go of the ridge. That makes the ordinary deferral the recovery as well: the
+app sends `stop`, waits for `ok:1`, then sends the movement. `Stop` on its own also
+clears an error, and there it sends only one `stop` — the second of the pair would drop
+the ridge.
 
 ### How far "Open" goes
 
