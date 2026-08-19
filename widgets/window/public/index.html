@@ -536,9 +536,13 @@
             : translate('widget.open', 'Open'));
         }
 
+        // The ridge sensor, not the readiness flag - a blocked window clears
+        // readiness while the ridge is still sitting in the device.
         setTile('ready',
-          flags.ready ? translate('widget.ridge_in', 'Inserted') : translate('widget.ridge_out', 'Removed'),
-          flags.ready ? '' : 'warn');
+          state.ridgeInside
+            ? translate('widget.ridge_in', 'Inserted')
+            : translate('widget.ridge_out', 'Removed'),
+          state.ridgeInside ? '' : 'warn');
         setTile('fix', flags.fix ? translate('widget.yes', 'Yes') : '—');
         // Planning: are automatic plans set up on the device, and are they running?
         if (!flags.hasPlans) {

@@ -45,6 +45,9 @@ class SmarwiDevice extends Homey.Device {
     // windowcoverings_state next to windowcoverings_set would give the device
     // tile two controls for the same thing.
     this.movement = 'idle';
+    // `ok` from the device: whether it will act on a movement command at all.
+    // It also drops on an error, so it is not the ridge sensor - that is `ro`.
+    this.ready = true;
 
     await this.migrateCapabilities();
 
@@ -387,7 +390,7 @@ class SmarwiDevice extends Homey.Device {
         // Plans exist unless the device reports "no plans".
         hasPlans: this.lastStatus ? !this.lastStatus.noPlans : false,
         fix: this.getCapabilityValue('smarwi_fixed') === true,
-        ready: this.getCapabilityValue('smarwi_ridge_inside') === true,
+        ready: this.ready === true,
         moving: this.lastStatus ? this.lastStatus.moving : false,
         closed: this.lastStatus ? this.lastStatus.closed : false,
       },
@@ -411,8 +414,10 @@ class SmarwiDevice extends Homey.Device {
     if (!this.getAvailable()) await this.setAvailable().catch(this.error);
     await this.unsetWarning().catch(() => null);
 
-    // "Ready" is the flag the device itself shows: the ridge is in the device.
-    await this.setCapabilityValue('smarwi_ridge_inside', status.ready).catch(this.error);
+    this.ready = status.ready;
+    // `ro` is the ridge sensor. `ok` looks like it as long as nothing is wrong,
+    // but a blocked window pulls `ok` to 0 with the ridge still in place.
+    await this.setCapabilityValue('smarwi_ridge_inside', status.ridgeInside).catch(this.error);
 
     // Moving the window means the SMARWI has the ridge, so a movement clears
     // any release the user asked for earlier.
@@ -521,7 +526,16 @@ class SmarwiDevice extends Homey.Device {
    * @param {string} command
    */
   async requestMove(command) {
-    if (this.getCapabilityValue('smarwi_ridge_inside') !== false) {
+    if (this.ready !== false) {
+      this.clearPending();
+      return this.send(command);
+    }
+
+    // An error also clears `ok`, and there `stop` would not engage anything -
+    // it would let go of the ridge. Let the device answer for itself instead.
+    if (this.lastStatus && this.lastStatus.error) {
+      this.log(`Device reports an error (s:${this.lastStatus.stateCode} `
+        + `e:${this.lastStatus.errorCode}); sending "${command}" without touching the ridge`);
       this.clearPending();
       return this.send(command);
     }

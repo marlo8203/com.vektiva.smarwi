@@ -37,9 +37,10 @@ a second flat), or when the local route is temporarily down.
 
 | Feature | Homey capability / card |
 |---|---|
-| Open, close and open to X % | `windowcoverings_set` + Flow actions *Open to [X] %* / *Close the window* |
+| Open, close and open to X % | `windowcoverings_set` (Flow: *Set the position to*) + Flow actions *Open the window* / *Close the window* |
 | Stop a movement | `smarwi_stop` button + Flow action *Stop the movement* |
-| Fix / release the ridge | `smarwi_ridge_inside` switch + Flow actions *Fix the ridge* / *Release the ridge* |
+| Ridge in the device | `smarwi_ridge_inside` sensor + Flow condition *The ridge is inserted* |
+| Fix / release the ridge | Flow actions *Fix the ridge* / *Release the ridge* |
 | Raw command (`prio`, `queue`, …) | Flow action *Send a raw command* |
 | Opening percentage (logged in Insights) | `smarwi_position` |
 | Window held by the device | `smarwi_fixed` |
@@ -142,6 +143,13 @@ The app therefore **defers the movement**: it fixes the ridge, remembers what wa
 for, and sends it the moment the device reports `ok:1`. A deferred command is dropped
 after 90 seconds so the window cannot start moving long after the fact, and `Stop`
 cancels it.
+
+`ok` is **not** a ridge sensor, even though it usually moves with one. Anything that
+stops the device acting clears it, an error included — a window locked to the frame
+reports `ok:0 ro:0`, meaning "cannot move" and "ridge is in place" at the same time. So
+the app shows `ro` as the ridge and keeps `ok` for the deferral logic only. In that
+error state it also skips the engaging `stop`, which would otherwise let go of a ridge
+that was never loose.
 
 ### How far "Open" goes
 

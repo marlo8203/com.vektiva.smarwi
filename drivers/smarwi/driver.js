@@ -13,8 +13,8 @@ const { discoverSmarwis } = require('../../lib/discover');
 class SmarwiDriver extends Homey.Driver {
 
   async onInit() {
-    this.homey.flow.getActionCard('open_to')
-      .registerRunListener(async ({ device, position }) => device.openWindow(position));
+    this.homey.flow.getActionCard('open')
+      .registerRunListener(async ({ device }) => device.openWindow(100));
 
     this.homey.flow.getActionCard('close')
       .registerRunListener(async ({ device }) => device.closeWindow());

@@ -64,5 +64,8 @@
   },
   "1.3.1": {
     "en": "The App Store image now shows the window tilting into the room, which is how a SMARWI window opens, with the unit on the sash and its ridge drawn back up to the frame."
+  },
+  "1.3.2": {
+    "en": "The Ridge tile reported \"Removed\" whenever the window got blocked, because it was showing the readiness flag instead of the ridge sensor - a locked window now says Blocked while the ridge still reads Inserted. The Flow action \"Open to X %\" became a plain \"Open the window\"; a partial opening belongs to the \"Set the position to\" card."
   }
 }
