@@ -7,7 +7,7 @@ const sharp = require('sharp');
 const fs = require('fs');
 const path = require('path');
 
-const root = path.join(__dirname, '..', '..');
+const root = path.join(__dirname, '..');
 
 async function render(svg, out, w, h, flatten) {
   let pipe = sharp(path.join(__dirname, svg), { density: 384 }).resize(w, h, { fit: 'fill' });

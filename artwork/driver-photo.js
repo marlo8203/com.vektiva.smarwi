@@ -7,7 +7,7 @@
 const sharp = require('sharp');
 const path = require('path');
 
-const root = path.join(__dirname, '..', '..');
+const root = path.join(__dirname, '..');
 const source = path.join(root, 'docs', 'vektiva-product.png');
 
 async function build(size, margin) {
