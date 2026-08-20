@@ -38,7 +38,7 @@ module.exports = {
 
     switch (body.action) {
       case 'open':
-        await device.openWindow(100);
+        await device.openFully();
         break;
       case 'close':
         await device.closeWindow();

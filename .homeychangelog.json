@@ -70,5 +70,8 @@
   },
   "1.3.3": {
     "en": "A window that had been locked to the frame stayed stuck: the SMARWI latches that error and refuses to move until it is reset, and 1.3.2 stopped sending the reset. Opening the window now clears the error first and then moves, and Stop clears it on its own."
+  },
+  "1.3.4": {
+    "en": "Opening fully now sends the plain open command instead of \"open to 100 %\". The firmware treats a percentage as a repositioning and pulls the sash back to the frame first; the plain command opens straight away."
   }
 }

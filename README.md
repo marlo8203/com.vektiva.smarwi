@@ -164,6 +164,12 @@ the ridge.
 
 ### How far "Open" goes
 
+`Open` sends a bare `/cmd/open`, not `/cmd/open/100`. Both end up in the same place, but
+a percentage is a *repositioning* to the firmware: it pulls the sash back to the frame
+to re-reference itself and only then opens. Plain `open` goes straight there, so the
+full-open button and the Flow action use it, and so does dragging the slider all the way
+to 100 %.
+
 `Open` means "to the calibrated maximum": the device travels `cfdist` (the distance
 recorded by the calibration wizard) multiplied by `vpct`, the *Maximum open position*
 Finetune value. With `vpct: 100` it uses the whole calibrated distance, and if that
@@ -186,7 +192,8 @@ Asking for a different opening while the window is already open therefore trigge
 firmware's *reopen*: the sash is pulled back to the frame sensor, re-referenced, and
 extended to the new distance. It shows up as state codes `212 → 214 → 216`.
 
-Closed → X % is a single movement; X % → Y % is always a full cycle through the frame.
+Closed → X % is a single movement; X % → Y % is always a full cycle through the frame,
+and so is X % → 100 % unless the plain `open` command is used instead of a percentage.
 Changing the percentage in small steps is slow and wears the mechanism, so presets beat
 fine-tuning with the slider.
 

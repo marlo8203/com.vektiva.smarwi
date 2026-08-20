@@ -1,11 +1,3 @@
-Let the house breathe without getting up. This app puts your Vektiva SMARWI window
-openers in Homey and talks to them straight over your local network, so a window still
-opens when the internet is having a bad day. The device pushes every change back by
-itself, which means Homey follows the sash in real time and quietly records how far the
-window was open and for how long.
+Let the house breathe without getting up. This app puts your Vektiva SMARWI window openers in Homey and talks to them straight over your local network, so a window still opens when the internet is having a bad day. The device pushes every change back by itself, which means Homey follows the sash in real time and quietly records how far the window was open and for how long.
 
-Open, close, stop halfway or set an exact opening - from a Flow, from the device tile,
-or from the Window widget that draws the window on your dashboard with the fresh air
-streaming in. When you would rather move the sash by hand, let the SMARWI release its
-ridge and take it back afterwards. This is a community app; it is not made by, endorsed
-by, or supported by Vektiva.
+Open, close, stop halfway or set an exact opening - from a Flow, from the device tile, or from the Window widget that draws the window on your dashboard with the fresh air streaming in. When you would rather move the sash by hand, let the SMARWI release its ridge and take it back afterwards. This is a community app; it is not made by, endorsed by, or supported by Vektiva.

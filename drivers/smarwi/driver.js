@@ -14,7 +14,7 @@ class SmarwiDriver extends Homey.Driver {
 
   async onInit() {
     this.homey.flow.getActionCard('open')
-      .registerRunListener(async ({ device }) => device.openWindow(100));
+      .registerRunListener(async ({ device }) => device.openFully());
 
     this.homey.flow.getActionCard('close')
       .registerRunListener(async ({ device }) => device.closeWindow());

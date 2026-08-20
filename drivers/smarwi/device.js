@@ -595,8 +595,28 @@ class SmarwiDevice extends Homey.Device {
     this.send(command).catch((err) => this.error('Deferred command failed:', err.message));
   }
 
+  /**
+   * Opens as far as the device is calibrated to go, with a bare `open`.
+   *
+   * `open/100` would land in the same place but the firmware treats any
+   * percentage as a repositioning: it pulls the sash back to the frame to
+   * re-reference itself and only then opens. `open` goes straight there.
+   */
+  async openFully() {
+    this.requestedPosition = 100;
+    this.positionUnknown = false;
+    this.rememberOpening(100);
+
+    await this.requestMove('open');
+    this.movement = 'up';
+    await this.setCapabilityValue('windowcoverings_set', 1).catch(this.error);
+  }
+
+  /** Opens part way. 100 % goes through openFully(), to skip the frame trip. */
   async openWindow(position = 100) {
     const pct = Math.min(100, Math.max(1, Math.round(position)));
+    if (pct >= 100) return this.openFully();
+
     this.requestedPosition = pct;
     this.positionUnknown = false;
     this.rememberOpening(pct);

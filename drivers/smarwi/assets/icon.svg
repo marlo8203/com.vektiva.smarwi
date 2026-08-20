@@ -1,11 +1,11 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 960" width="960" height="960">
   <!-- Driver icon: the SMARWI unit with the toothed ridge running through it.
+       Drawn as an outline so the holes stay transparent when Homey tints it.
        Author: Marian Lojka <marian.lojka@gmail.com> -->
-  <g fill="none" stroke="#000" stroke-width="58" stroke-linecap="round" stroke-linejoin="round">
-    <path d="M52 480 H840"/>
-    <path d="M118 480 V600"/>
-    <path d="M232 480 V600"/>
-    <path d="M346 480 V600"/>
-    <rect x="428" y="240" width="480" height="480" rx="98"/>
+  <g fill="#000">
+    <rect x="44" y="446" width="196" height="82" rx="24"/>
+    <rect x="304" y="446" width="352" height="82" rx="24"/>
+    <rect x="720" y="446" width="196" height="82" rx="24"/>
   </g>
+  <rect x="234" y="258" width="492" height="450" rx="108" fill="none" stroke="#000" stroke-width="78"/>
 </svg>
