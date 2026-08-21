@@ -408,6 +408,21 @@ local network and offers what it finds — nothing to type in. The IP address ca
 changed later in the device settings; reserve a fixed address for the SMARWI in your
 router.
 
+### When the address changes anyway
+
+A SMARWI has no mDNS, so the app remembers its IP — and a new DHCP lease used to leave
+the device unreachable until the address was edited by hand. Worse, the old address may
+by then belong to something else that answers ping but has no web server, which looks
+exactly like a broken SMARWI.
+
+So after three failed polls in a row the app scans the subnet again, matches the reply
+whose `id` equals the stored Device ID, and saves the new address itself. The scan is
+rate-limited to once every five minutes. Over MQTT it is not needed at all: the status
+message carries the device's own `ip`, so a lease change is picked up on the next update.
+
+A DHCP reservation in the router is still worth setting up — it makes the change
+instant instead of costing a scan.
+
 ### Why a network scan instead of typing an IP
 
 The SMARWI announces itself over neither mDNS nor SSDP, so discovering it automatically

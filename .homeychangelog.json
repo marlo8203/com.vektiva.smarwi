@@ -73,5 +73,8 @@
   },
   "1.3.4": {
     "en": "Opening fully now sends the plain open command instead of \"open to 100 %\". The firmware treats a percentage as a repositioning and pulls the sash back to the frame first; the plain command opens straight away."
+  },
+  "1.3.5": {
+    "en": "A SMARWI that gets a new address from the router is no longer stuck as unreachable: the app notices the old one has gone quiet, finds the device on the network by its ID and saves the new address by itself. Requests to the device are also sent one at a time now, instead of from several timers at once. The percentage row is called \"Open position\", so it is not mistaken for a status stuck on \"Opening\"."
   }
 }

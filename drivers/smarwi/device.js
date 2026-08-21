@@ -11,15 +11,25 @@ const Homey = require('homey');
 const SmarwiApi = require('../../lib/SmarwiApi');
 const SmarwiCloudApi = require('../../lib/SmarwiCloudApi');
 const SmarwiSocket = require('../../lib/SmarwiSocket');
+const { discoverSmarwis } = require('../../lib/discover');
 
 const DEFAULT_POLL_INTERVAL = 5; // seconds
 // With the WebSocket connected the device pushes every change, so polling is
 // only a safety net - but the readiness flag (`ok`) matters enough to check it
 // regularly even then.
 const SOCKET_POLL_INTERVAL = 15; // seconds
+// How often to check whether the device got ready while a command waits. The
+// device is answering an engage at that moment, so asking briskly only competes
+// with it for the few TCP slots it has.
+const READINESS_POLL_INTERVAL = 2000; // ms
 // How long a movement waits for the device to become ready before it is dropped,
 // so a forgotten command cannot move the window much later.
 const PENDING_TTL = 90000; // ms
+// A SMARWI whose DHCP lease changed is unreachable at its old address, so the
+// app goes looking for it - but a /24 scan is heavy, so not too often and only
+// after the address has failed a few times in a row.
+const REDISCOVER_AFTER_FAILURES = 3;
+const REDISCOVER_INTERVAL = 300000; // ms
 
 class SmarwiDevice extends Homey.Device {
 
@@ -48,6 +58,10 @@ class SmarwiDevice extends Homey.Device {
     // `ok` from the device: whether it will act on a movement command at all.
     // It also drops on an error, so it is not the ridge sensor - that is `ro`.
     this.ready = true;
+    // Consecutive failed polls, and when the network was last searched for the
+    // device, so a lost address gets found again without hand-editing it.
+    this.failedPolls = 0;
+    this.lastRediscovery = 0;
 
     await this.migrateCapabilities();
 
@@ -227,7 +241,7 @@ class SmarwiDevice extends Homey.Device {
   scheduleSettlingPolls() {
     if (!this.getLocal()) return;
 
-    [1200, 3000, 6000, 12000].forEach((delay) => {
+    [1500, 4000, 9000].forEach((delay) => {
       this.homey.setTimeout(() => {
         this.poll().catch(() => null);
       }, delay);
@@ -326,6 +340,17 @@ class SmarwiDevice extends Homey.Device {
   }
 
   async poll() {
+    if (this.pollInFlight) return this.pollInFlight;
+
+    this.pollInFlight = this.runPoll();
+    try {
+      return await this.pollInFlight;
+    } finally {
+      this.pollInFlight = null;
+    }
+  }
+
+  async runPoll() {
     const local = this.getLocal();
     if (!local) return null;
 
@@ -345,10 +370,69 @@ class SmarwiDevice extends Homey.Device {
       } else if (this.getAvailable()) {
         await this.setUnavailable(this.homey.__('errors.unreachable')).catch(this.error);
       }
+
+      // Nothing is going to confirm the movement that was assumed when the
+      // command went out, so do not leave the widget saying "Opening" forever.
+      this.movement = 'idle';
+      this.publishState();
+
+      this.failedPolls += 1;
+      this.rediscover().catch((error) => this.log(`Rediscovery failed: ${error.message}`));
       throw err;
     }
 
+    this.failedPolls = 0;
     return this.applyStatus(status);
+  }
+
+  /**
+   * Finds the device again after its address changed.
+   *
+   * A SMARWI has no mDNS, so the only way to place it is to ask every host on
+   * the subnet for its status and match the device ID. That is expensive, hence
+   * the guards - and it is skipped entirely when a status is arriving over MQTT,
+   * because that carries the current address already.
+   */
+  async rediscover() {
+    const deviceId = this.getSetting('device_id');
+    if (!deviceId || !this.getLocal()) return;
+    if (this.failedPolls < REDISCOVER_AFTER_FAILURES) return;
+    if (Date.now() - this.lastRediscovery < REDISCOVER_INTERVAL) return;
+    this.lastRediscovery = Date.now();
+
+    let hint = null;
+    try {
+      hint = await this.homey.cloud.getLocalAddress();
+    } catch (err) {
+      this.log(`Could not determine Homey's local address: ${err.message}`);
+    }
+
+    this.log(`${this.getSetting('address')} stopped answering; searching the network`);
+    const { devices } = await discoverSmarwis({ hint, log: (msg) => this.log(msg) });
+    const match = devices.find(({ status }) => status.deviceId === deviceId);
+
+    if (!match) {
+      this.log('No SMARWI with this device ID answered');
+      return;
+    }
+
+    await this.adoptAddress(match.address);
+  }
+
+  /** Points the local client at `address` and saves it in the device settings. */
+  async adoptAddress(address) {
+    if (!address || address === this.getSetting('address')) return;
+
+    this.log(`Address changed from ${this.getSetting('address') || 'none'} to ${address}`);
+    this.local = new SmarwiApi(address, { timeout: 5000 });
+    this.failedPolls = 0;
+    this.requestedPosition = null;
+
+    // setSettings() does not call onSettings(), so the transports are restarted
+    // here rather than waiting for it.
+    await this.setSettings({ address }).catch(this.error);
+    this.startSocket();
+    this.restartPolling();
   }
 
   /* ------------------------------------------------------------------ *
@@ -483,6 +567,12 @@ class SmarwiDevice extends Homey.Device {
     if (status.name && status.name !== this.getSetting('device_name')) patch.device_name = status.name;
     if (Object.keys(patch).length > 0) await this.setSettings(patch).catch(this.error);
 
+    // The status carries the device's own IP, so a lease change is caught for
+    // free whenever the status came over MQTT or the cloud.
+    if (status.ip && status.ip !== this.getSetting('address')) {
+      await this.adoptAddress(status.ip);
+    }
+
     return status;
   }
 
@@ -564,7 +654,7 @@ class SmarwiDevice extends Homey.Device {
         return;
       }
       this.poll().catch(() => null);
-    }, 800);
+    }, READINESS_POLL_INTERVAL);
   }
 
   stopWatchingReadiness() {
